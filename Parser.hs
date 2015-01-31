@@ -3,6 +3,7 @@
 module Parser where
 
 import Control.Applicative
+import Control.Monad
 
 data Parser a = P (String -> [(a, String)])
 
@@ -49,7 +50,13 @@ instance Monad Parser where
 	return = result
 
 	(>>=) :: Parser a -> (a -> Parser b) -> Parser b
-	(>>=) = bind
+	m >>= f = bind m f
+
+instance MonadPlus Parser where
+	mzero :: Parser a
+	mzero = zero
+	mplus :: Parser a -> Parser a -> Parser a
+	mplus = plus 
 
 seq :: Parser a -> Parser b -> Parser (a, b)
 seq p q = do  x <- p
@@ -58,10 +65,8 @@ seq p q = do  x <- p
 
 sat :: (Char -> Bool) -> Parser Char
 sat p = do x <- item
-           if (p x) then
-           	   return x
-           else
-           	   zero
+           guard (p x)
+           return x
 
 char :: Char -> Parser Char
 char ch = sat (==ch)
