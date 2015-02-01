@@ -120,5 +120,17 @@ sepBy1 p sep = do x  <- p
                   xs <- many (do { sep; p })
                   return (x:xs)
 
-    
+sepBy :: Parser a -> Parser b -> Parser [a]
+sepBy p sep = sepBy1 p sep <|> return []
+
+brackets :: Parser a -> Parser b -> Parser c -> Parser b
+brackets open p close = do open
+                           x <- p
+                           close
+                           return x
+
+ints :: Parser [Int]
+ints = brackets (char '[') (int `sepBy1` (char ',')) (char ']')
+
+
 
