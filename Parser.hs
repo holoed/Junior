@@ -2,6 +2,7 @@
 
 module Parser where
 
+import Data.Char
 import Control.Applicative
 import Control.Monad
 
@@ -27,6 +28,11 @@ bind p f = P (\inp -> concat [apply (f v) inp' | (v, inp') <- apply p inp])
 plus :: Parser a -> Parser a -> Parser a
 plus p q = P (\inp -> (apply p inp ++ apply q inp))
 
+first :: Parser a -> Parser a
+first p = P (\inp -> case apply p inp of
+	                   [] -> []
+	                   (x:xs) -> [x])
+
 instance Functor Parser where
 	fmap :: (a -> b) -> Parser a -> Parser b
 	fmap f m = bind m (\x -> result (f x))
@@ -43,7 +49,7 @@ instance Alternative Parser where
 	empty = zero
 
 	(<|>) :: Parser a -> Parser a -> Parser a
-	(<|>) = plus
+	p <|> q = first (p `plus` q)
 
 instance Monad Parser where
 	return :: a -> Parser a
@@ -57,6 +63,7 @@ instance MonadPlus Parser where
 	mzero = zero
 	mplus :: Parser a -> Parser a -> Parser a
 	mplus = plus 
+
 
 seq :: Parser a -> Parser b -> Parser (a, b)
 seq p q = do  x <- p
@@ -72,14 +79,13 @@ char :: Char -> Parser Char
 char ch = sat (==ch)
 
 digit :: Parser Char
-digit = sat (\x -> '0' <= x && x <= '9')
+digit = sat isDigit
 
 lower :: Parser Char
-lower = sat (\x -> 'a' <= x && x <= 'z')
+lower = sat isLower
 
 upper :: Parser Char
-upper = sat (\x -> 'A' <= x && x <= 'Z')
-
+upper = sat isUpper
 
 letter :: Parser Char
 letter = lower <|> upper
@@ -90,11 +96,20 @@ alphanum = letter <|> digit
 word :: Parser String
 word = many letter
 
+space :: Parser String
+space = many (sat isSpace)
+
 string :: String -> Parser String
 string [] = return []
 string (x:xs) = do char x
                    string xs
                    return (x:xs)
+
+token :: Parser a -> Parser a
+token p = do {space; a <- p; space; return a}
+
+symb :: String -> Parser String
+symb cs = token (string cs)
 
 ident :: Parser String
 ident = do x  <- lower
@@ -114,6 +129,9 @@ int = do f <- op
          n <- nat
          return (f n)
       where op = do { char '-'; return negate } <|> return id
+
+integer :: Parser Int
+integer = token int
 
 sepBy1 :: Parser a -> Parser b -> Parser [a]
 sepBy1 p sep = do x  <- p
@@ -145,12 +163,12 @@ chainr1 p op = bind p rest
                                 return (f x y)) <|> return x
 
 addOp :: Num a => Parser (a -> a -> a)
-addOp = (do { char '+'; return (+) }) <|> 
-        (do { char '-'; return (-) })
+addOp = (do { symb "+"; return (+) }) <|> 
+        (do { symb "-"; return (-) })
 
 mulOp :: Integral a => Parser (a -> a -> a)
-mulOp = (do { char '*'; return (*) }) <|>
-        (do { char '/'; return (div) }) 
+mulOp = (do { symb "*"; return (*) }) <|>
+        (do { symb "/"; return (div) }) 
 
 expr :: Parser Int
 expr = term `chainl1` addOp
@@ -159,15 +177,20 @@ term :: Parser Int
 term = factor `chainl1` mulOp
 
 factor :: Parser Int
-factor = int <|> (brackets (char '(') expr (char ')'))
+factor = (token int) <|> (brackets (symb "(") expr (symb ")"))
 
-force :: Parser a -> Parser a
-force p = P (\inp -> let x = apply p inp in (fst (head x), snd (head x)) : tail x)
+comment :: Parser ()
+comment = do string "--"
+             many (sat (\x -> x /= '\n'))
+             return ()
 
-first :: Parser a -> Parser a
-first p = P (\inp -> case apply p inp of
-	                   [] -> []
-	                   (x:xs) -> [x])
+
+
+
+
+
+
+
 
 
 
