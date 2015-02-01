@@ -96,8 +96,13 @@ alphanum = letter <|> digit
 word :: Parser String
 word = many letter
 
-space :: Parser String
-space = many (sat isSpace)
+space :: Parser ()
+space = do sat isSpace
+           return ()
+
+spaces :: Parser ()
+spaces = do many space
+            return ()
 
 string :: String -> Parser String
 string [] = return []
@@ -105,8 +110,20 @@ string (x:xs) = do char x
                    string xs
                    return (x:xs)
 
+comment :: Parser ()
+comment = do string "--"
+             many (sat (\x -> x /= '\n'))
+             return ()
+
+junk :: Parser ()
+junk = do many (space <|> comment)
+          return ()
+
 token :: Parser a -> Parser a
-token p = do {space; a <- p; space; return a}
+token p = do { x <- p; junk; return x }
+
+parse :: Parser a -> Parser a
+parse p = do { junk; p }
 
 symb :: String -> Parser String
 symb cs = token (string cs)
@@ -132,6 +149,15 @@ int = do f <- op
 
 integer :: Parser Int
 integer = token int
+
+natural :: Parser Int
+natural = token nat
+
+identifier :: [String] -> Parser String
+identifier ks = do x <- ident
+                   if not (elem x ks)
+                   then return x
+                   else zero
 
 sepBy1 :: Parser a -> Parser b -> Parser [a]
 sepBy1 p sep = do x  <- p
@@ -179,10 +205,7 @@ term = factor `chainl1` mulOp
 factor :: Parser Int
 factor = (token int) <|> (brackets (symb "(") expr (symb ")"))
 
-comment :: Parser ()
-comment = do string "--"
-             many (sat (\x -> x /= '\n'))
-             return ()
+
 
 
 
