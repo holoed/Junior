@@ -132,5 +132,44 @@ brackets open p close = do open
 ints :: Parser [Int]
 ints = brackets (char '[') (int `sepBy1` (char ',')) (char ']')
 
+chainl1 :: Parser a -> Parser (a -> a -> a) -> Parser a
+chainl1 p op = bind p rest
+             where rest x = (do f <- op
+                                y <- p
+                                rest (f x y)) <|> return x
+
+chainr1 :: Parser a -> Parser (a -> a -> a) -> Parser a
+chainr1 p op = bind p rest
+             where rest x = (do f <- op
+                                y <- chainr1 p op
+                                return (f x y)) <|> return x
+
+addOp :: Num a => Parser (a -> a -> a)
+addOp = (do { char '+'; return (+) }) <|> 
+        (do { char '-'; return (-) })
+
+mulOp :: Integral a => Parser (a -> a -> a)
+mulOp = (do { char '*'; return (*) }) <|>
+        (do { char '/'; return (div) }) 
+
+expr :: Parser Int
+expr = term `chainl1` addOp
+
+term :: Parser Int
+term = factor `chainl1` mulOp
+
+factor :: Parser Int
+factor = int <|> (brackets (char '(') expr (char ')'))
+
+force :: Parser a -> Parser a
+force p = P (\inp -> let x = apply p inp in (fst (head x), snd (head x)) : tail x)
+
+first :: Parser a -> Parser a
+first p = P (\inp -> case apply p inp of
+	                   [] -> []
+	                   (x:xs) -> [x])
+
+
+
 
 
