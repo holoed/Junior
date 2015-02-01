@@ -92,8 +92,33 @@ word = many letter
 
 string :: String -> Parser String
 string [] = return []
-string (x:xs) = do _ <- char x
-                   _ <- string xs
+string (x:xs) = do char x
+                   string xs
                    return (x:xs)
 
+ident :: Parser String
+ident = do x  <- lower
+           xs <- many alphanum
+           return (x:xs)
+
+many1 :: Parser a -> Parser [a]
+many1 p = do x  <- p
+             xs <- many p
+             return (x:xs)
+
+nat :: Parser Int
+nat = fmap read (many1 digit)
+
+int :: Parser Int
+int = do f <- op
+         n <- nat
+         return (f n)
+      where op = do { char '-'; return negate } <|> return id
+
+sepBy1 :: Parser a -> Parser b -> Parser [a]
+sepBy1 p sep = do x  <- p
+                  xs <- many (do { sep; p })
+                  return (x:xs)
+
+    
 
