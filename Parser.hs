@@ -6,19 +6,39 @@ import Prelude hiding (seq)
 import Data.Char
 import Control.Applicative
 import Control.Monad
+import Control.Monad.Trans
 import Control.Monad.Trans.State.Lazy
+import Control.Monad.Trans.Reader
 
-type Parser a = StateT String [] a
+type Pos = (Int, Int)
+
+type PString = (Pos, String)
+
+type Parser a = ReaderT Pos (StateT PString []) a
 
 item :: Parser Char
-item = do s <- get
+item = do s <- (lift get)
+          dpos <- ask
           case s of 
-          	[] -> mzero
-          	(x:xs) -> do put xs
-          	             return x
+          	(pos, []) -> mzero
+          	(pos, x:xs) ->  if (onside pos dpos)
+                            then do { lift (put (newState (pos, x:xs)))
+          	                          ; return x }
+          	                else mzero
+
+onside :: Pos -> Pos -> Bool
+onside (l, c) (dl, dc) = (c > dc) || (l == dl)
+
+
+newState :: PString -> PString
+newState ((l, c), x:xs) = (newpos, xs)
+	where newpos = case x of 
+		            '\n' -> (l + 1, 0)
+		            '\t' -> (l, ((c `div` 8) + 1) * 8)
+		            _ -> (l, c + 1)
 
 first :: Parser a -> Parser a
-first p = mapStateT (take 1) p
+first p = mapReaderT (\m -> mapStateT (\xs -> take 1 xs) m) p
 
 many' :: Parser a -> Parser [a]
 many' = first . many
