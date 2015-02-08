@@ -37,6 +37,18 @@ newState ((l, c), x:xs) = (newpos, xs)
 		            '\t' -> (l, ((c `div` 8) + 1) * 8)
 		            _ -> (l, c + 1)
 
+many1_offside :: Parser a -> Parser [a]
+many1_offside p = do (pos, _) <- (lift get)
+                     vs <- local (\_ -> pos) (many1 (off p))
+                     return vs
+
+off :: Parser a -> Parser a
+off p = do (dl, dc) <- ask
+           ((l, c), _) <- (lift get)
+           guard (c == dc)
+           v <- local (\_ -> (l, dc)) p
+           return v
+
 first :: Parser a -> Parser a
 first p = mapReaderT (\m -> mapStateT (\xs -> take 1 xs) m) p
 
@@ -97,7 +109,7 @@ comment = do string "--"
              return ()
 
 junk :: Parser ()
-junk = do many' (space <|> comment)
+junk = do local (\_ -> (0, -1)) (many' (space <|> comment))
           return ()
 
 token :: Parser a -> Parser a
