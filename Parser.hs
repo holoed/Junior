@@ -86,8 +86,8 @@ token p = do { x <- p; junk; return x }
 parse :: Parser a -> Parser a
 parse p = do { junk; p }
 
-symb :: String -> Parser String
-symb cs = token (string cs)
+symbol :: String -> Parser String
+symbol cs = token (string cs)
 
 ident :: Parser String
 ident = do x  <- lower
@@ -149,22 +149,7 @@ chainr1 p op = p >>= rest
                                 y <- chainr1 p op
                                 return (f x y)) <||> return x
 
-addOp :: Num a => Parser (a -> a -> a)
-addOp = (do { symb "+"; return (+) }) <||> 
-        (do { symb "-"; return (-) })
 
-mulOp :: Integral a => Parser (a -> a -> a)
-mulOp = (do { symb "*"; return (*) }) <||>
-        (do { symb "/"; return (div) }) 
-
-expr :: Parser Int
-expr = term `chainl1` addOp
-
-term :: Parser Int
-term = factor `chainl1` mulOp
-
-factor :: Parser Int
-factor = (token int) <||> (brackets (symb "(") expr (symb ")"))
 
 
 
