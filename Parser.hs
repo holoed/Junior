@@ -22,8 +22,8 @@ item = do s <- (lift get)
           case s of 
           	(pos, []) -> mzero
           	(pos, x:xs) ->  if (onside pos dpos)
-                            then do { lift (put (newState (pos, x:xs)))
-          	                          ; return x }
+                                then do lift (put (newState (pos, x:xs)))
+          	                        return x 
           	                else mzero
 
 onside :: Pos -> Pos -> Bool
