@@ -60,7 +60,7 @@ executable Junior
   -- other-extensions:    
   
   -- Other library packages from which modules are imported.
-  build-depends:       base, transformers
+  build-depends:       base, mtl, transformers
   
   -- Directories containing source files.
   -- hs-source-dirs:      
