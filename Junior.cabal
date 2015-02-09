@@ -60,7 +60,7 @@ executable Junior
   -- other-extensions:    
   
   -- Other library packages from which modules are imported.
-  build-depends:       base >=4.7 && <4.8
+  build-depends:       base
   
   -- Directories containing source files.
   -- hs-source-dirs:      
