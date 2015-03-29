@@ -1,4 +1,5 @@
 {-# LANGUAGE InstanceSigs #-}
+{-# OPTIONS_GHC -fno-warn-unused-do-bind  #-}
 
 module Parser where
 
@@ -31,6 +32,7 @@ onside (l, c) (dl, dc) = (c > dc) || (l == dl)
 
 
 newState :: PString -> PString
+newState (pos, []) = (pos, [])
 newState ((l, c), x:xs) = (newpos, xs)
 	where newpos = case x of 
 		            '\n' -> (l + 1, 0)
@@ -43,7 +45,7 @@ many1_offside p = do (pos, _) <- (lift get)
                      return vs
 
 off :: Parser a -> Parser a
-off p = do (dl, dc) <- ask
+off p = do (_, dc) <- ask
            ((l, c), _) <- (lift get)
            guard (c == dc)
            v <- local (\_ -> (l, dc)) p

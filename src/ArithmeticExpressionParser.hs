@@ -1,15 +1,16 @@
+{-# OPTIONS_GHC -fno-warn-unused-do-bind  #-}
+
 module ArithmeticExpressionParser where
 
 import Parser
-import Control.Monad.Trans.State.Lazy
 
 addOp :: Num a => Parser (a -> a -> a)
-addOp = (do { symbol "+"; return (+) }) <||> 
+addOp = (do { symbol "+"; return (+) }) <||>
         (do { symbol "-"; return (-) })
 
 mulOp :: Integral a => Parser (a -> a -> a)
 mulOp = (do { symbol "*"; return (*) }) <||>
-        (do { symbol "/"; return (div) }) 
+        (do { symbol "/"; return (div) })
 
 expr :: Parser Int
 expr = term `chainl1` addOp

@@ -1,7 +1,6 @@
 module Main where
 
-import Parser
-import ArithmeticExpressionParser
-import LambdaExpressionParser
 
+
+main :: IO()
 main = print "Work in progress"

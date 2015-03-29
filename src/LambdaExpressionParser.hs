@@ -1,7 +1,8 @@
+{-# OPTIONS_GHC -fno-warn-unused-do-bind  #-}
+
 module LambdaExpressionParser where
 
 import Parser
-import Control.Monad.Trans.State.Lazy
 
 data Expr = App Expr Expr
           | Lam String Expr
