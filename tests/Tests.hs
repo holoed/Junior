@@ -45,6 +45,15 @@ main = hspec $ do
          `shouldBe` [(Let [("x",Literal (Int 42))] (Var "x"),((0,15),""))]
       runParser expr ((0,0), "let x = 5 in x + x")
          `shouldBe` [(Let [("x",Literal (Int 5))] (App (App (Var "+") (Var "x")) (Var "x")),((0,18),""))]
+      runParser expr ((0,0), "let x = 5 in (x + 1) * y")
+         `shouldBe` [(Let [("x",Literal (Int 5))] (App (App (Var "*") (App (App (Var "+") (Var "x")) (Literal (Int 1)))) (Var "y")),((0,24),""))]
+      runParser expr ((0,0), "let x = y + 1 in x + 2")
+         `shouldBe` [(Let [("x",App (App (Var "+") (Var "y")) (Literal (Int 1)))] (App (App (Var "+") (Var "x")) (Literal (Int 2))),((0,22),""))]
+      runParser expr ((0,0), "let f = \\x -> x + 1 in f 5")
+         `shouldBe` [(Let [("f",Lam "x" (App (App (Var "+") (Var "x")) (Literal (Int 1))))] (App (Var "f") (Literal (Int 5))),((0,26),""))]
+
+
+
 
 
 
