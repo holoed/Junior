@@ -33,11 +33,25 @@ main = hspec $ do
       onside (6,2) (5,6) `shouldBe` False
       onside (5,1) (3,4) `shouldBe` False
 
-  describe "Lambda expression tests" $ do
+  describe "Let expression tests" $ do
     it "shoulbe parse let expression" $ do
-      runParser expr ((0,0), "let x = v in x") `shouldBe` [(Let [("x",Var "v")] (Var "x"),((0,14),""))]
-      runParser expr ((0,0), "let x = v\n in x") `shouldBe` [(Let [("x",Var "v")] (Var "x"),((1,5),""))]
-      runParser expr ((0,0), "let x = v\n    y = w\n in x") `shouldBe` [(Let [("x",Var "v"),("y",Var "w")] (Var "x"),((2,5),""))]
+      runParser expr ((0,0), "let x = v in x")
+         `shouldBe` [(Let [("x",Var "v")] (Var "x"),((0,14),""))]
+      runParser expr ((0,0), "let x = v\n in x")
+         `shouldBe` [(Let [("x",Var "v")] (Var "x"),((1,5),""))]
+      runParser expr ((0,0), "let x = v\n    y = w\n in x")
+         `shouldBe` [(Let [("x",Var "v"),("y",Var "w")] (Var "x"),((2,5),""))]
+      runParser expr ((0,0), "let x = 42 in x")
+         `shouldBe` [(Let [("x",Literal (Int 42))] (Var "x"),((0,15),""))]
+      runParser expr ((0,0), "let x = 5 in x + x")
+         `shouldBe` [(Let [("x",Literal (Int 5))] (App (App (Var "+") (Var "x")) (Var "x")),((0,18),""))]
+
+
+
+
+
+
+
 
 
 
