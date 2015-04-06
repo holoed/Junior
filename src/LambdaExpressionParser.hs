@@ -7,7 +7,7 @@ import Parser
 data Expr = App Expr Expr
           | Lam String Expr
           | Let [(String, Expr)] Expr
-          | Var String deriving Show
+          | Var String deriving (Show, Eq)
 
 expr :: Parser Expr
 expr = atom `chainl1` (return App)
