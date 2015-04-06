@@ -1,6 +1,6 @@
 {-# OPTIONS_GHC -fno-warn-unused-do-bind  #-}
 
-module LambdaExpressionParser where
+module JuniorParser where
 
 import Parser
 
