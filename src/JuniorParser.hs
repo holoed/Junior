@@ -5,13 +5,15 @@ module JuniorParser where
 import Parser
 
 data Lit = Int Int
-           deriving (Show, Eq)
+         | String String
+         deriving (Show, Eq)
 
 data Expr = App Expr Expr
           | Lam String Expr
           | Let [(String, Expr)] Expr
           | Literal Lit
-          | Var String deriving (Show, Eq)
+          | Var String
+          deriving (Show, Eq)
 
 
 infixOp :: String-> Expr -> Expr -> Expr
@@ -49,8 +51,15 @@ var = fmap Var variable
 lit :: Parser Expr
 lit = fmap Literal literal
 
+quoted_string :: Parser String
+quoted_string = do symbol "\""
+                   s <- many' (sat (\x -> x /= '\"'))
+                   symbol "\""
+                   return s
+
 literal :: Parser Lit
-literal = fmap Int (token int)
+literal = fmap Int (token int) <||>
+          fmap String (token quoted_string)
 
 paren :: Parser Expr
 paren = brackets (symbol "(") expr (symbol ")")

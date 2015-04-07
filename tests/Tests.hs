@@ -33,10 +33,22 @@ main = hspec $ do
       onside (6,2) (5,6) `shouldBe` False
       onside (5,1) (3,4) `shouldBe` False
 
+  describe "literal tests" $ do
+    it "should parse integer literal" $ do
+      runParser lit ((0,0),"42")
+        `shouldBe` [(Literal (Int 42), ((0,2), ""))]
+    it "should parse string literal" $ do
+      runParser lit ((0,0), "\"Hello World\"")
+        `shouldBe` [(Literal (String "Hello World"), ((0,13), ""))]
+
   describe "lambda expression tests" $ do
     it "should parse lambda expression for identity function" $ do
       runParser lam ((0,0), "\\x -> x")
         `shouldBe` [(Lam "x" (Var "x"), ((0,7), ""))]
+
+    it "should parse a lambda of a lambda containing an arithmetic expression" $ do
+      runParser lam ((0,0), "\\x -> \\y -> x + y")
+        `shouldBe` [(Lam "x" (Lam "y" (App (App (Var "+") (Var "x")) (Var "y"))), ((0,17), ""))]
 
   describe "Let expression tests" $ do
     it "shoulbe parse simple let expression" $ do
