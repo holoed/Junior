@@ -8,7 +8,8 @@ data Lit = Int Int
          | String String
          deriving (Show, Eq)
 
-data Expr = App Expr Expr
+data Expr = Decl [(String, Expr)]
+          | App Expr Expr
           | Lam String Expr
           | Let [(String, Expr)] Expr
           | Literal Lit
@@ -19,8 +20,26 @@ data Expr = App Expr Expr
 infixOp :: String-> Expr -> Expr -> Expr
 infixOp s x y =  App (App (Var s) x) y
 
+addOp :: Parser (Expr -> Expr -> Expr)
+addOp = (do { symbol "+"; return (infixOp "+") }) <||>
+        (do { symbol "-"; return (infixOp "-") })
+
+mulOp :: Parser (Expr -> Expr -> Expr)
+mulOp = (do { symbol "*"; return (infixOp "*") }) <||>
+        (do { symbol "/"; return (infixOp "/") })
+
+arith_expr :: Parser Expr
+arith_expr = term `chainl1` addOp
+
+term :: Parser Expr
+term = atom `chainl1` mulOp
+
 expr :: Parser Expr
 expr = arith_expr `chainl1` (return App)
+
+globalDef :: Parser Expr
+globalDef = do ds <- many1_offside defn
+               return (Decl ds)
 
 atom :: Parser Expr
 atom = lam <||> local <||> var <||> lit <||> paren
@@ -66,20 +85,6 @@ paren = brackets (symbol "(") expr (symbol ")")
 
 variable :: Parser String
 variable = identifier ["let", "in"]
-
-addOp :: Parser (Expr -> Expr -> Expr)
-addOp = (do { symbol "+"; return (infixOp "+") }) <||>
-        (do { symbol "-"; return (infixOp "-") })
-
-mulOp :: Parser (Expr -> Expr -> Expr)
-mulOp = (do { symbol "*"; return (infixOp "*") }) <||>
-        (do { symbol "/"; return (infixOp "/") })
-
-arith_expr :: Parser Expr
-arith_expr = term `chainl1` addOp
-
-term :: Parser Expr
-term = atom `chainl1` mulOp
 
 
 

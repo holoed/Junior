@@ -80,9 +80,26 @@ main = hspec $ do
       runParser expr ((0,0), "let f = \\x -> x + 1 in f 5")
          `shouldBe` [(Let [("f",Lam "x" (App (App (Var "+") (Var "x")) (Literal (Int 1))))] (App (Var "f") (Literal (Int 5))),((0,26),""))]
 
+  describe "Global declaration tests" $ do
+    it "should parse a top level simple declaration" $ do
+      runParser globalDef ((0,0), "x = 42")
+        `shouldBe` [(Decl [("x", Literal (Int 42))], ((0, 6), ""))]
 
+    it "should parse a top level declaration with an arithmetic expression inside" $ do
+      runParser globalDef ((0,0), "x = 3 + y")
+        `shouldBe` [(Decl [("x", App (App (Var "+") (Literal (Int 3))) (Var "y"))], ((0,9), ""))]
 
+    it "should parse a top level decl with a lambda inside" $ do
+      runParser globalDef ((0,0), "f = \\x -> x")
+        `shouldBe` [(Decl [("f", Lam "x" (Var "x"))], ((0,11), ""))]
 
+    it "should parse a top level decl with a lambda containing an arithmetic expression" $ do
+      runParser globalDef ((0,0), "f = \\x -> x + 1")
+        `shouldBe` [(Decl [("f", Lam "x" (App (App (Var "+") (Var "x")) (Literal (Int 1))))], ((0,15), ""))]
+
+    it "should parse multiple top level declarations" $ do
+      runParser globalDef ((0,0), "x = 42\ny = 32")
+        `shouldBe` [(Decl [("x", Literal (Int 42)), ("y", Literal (Int 32))], ((1,6), ""))]
 
 
 
