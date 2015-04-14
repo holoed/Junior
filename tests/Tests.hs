@@ -1,7 +1,10 @@
 module Main where
 
 import Data.Char
+import Ast
+import TypeTree
 import Parser
+import JuniorTypeChecker
 import JuniorParser
 import Test.Hspec
 import Control.Monad.Trans.State.Lazy
@@ -100,6 +103,23 @@ main = hspec $ do
     it "should parse multiple top level declarations" $ do
       runParser globalDef ((0,0), "x = 42\ny = 32")
         `shouldBe` [(Decl [("x", Literal (Int 42)), ("y", Literal (Int 32))], ((1,6), ""))]
+
+  describe "Type Checker tests" $ do
+    it "should type check literals" $ do
+      typeOf (Literal (Int 42))
+        `shouldBe` (TyCon("int", []))
+
+    it "should type check identity expression" $ do
+      typeOf (Lam "x" (Var "x"))
+        `shouldBe` (TyLam (TyVar "a") (TyVar "a"))
+
+    it "should type check increment expression" $ do
+      typeOf (Lam "x" (App (App (Var "+") (Var "x")) (Literal (Int 1))))
+        `shouldBe` (TyLam (TyCon("int", [])) (TyCon("int", [])))
+
+    it "should type check simple let expression" $ do
+      typeOf (Let [("x",Literal (Int 42))] (Var "x"))
+        `shouldBe` (TyCon("int", []))
 
 
 

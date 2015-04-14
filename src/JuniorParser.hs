@@ -2,20 +2,8 @@
 
 module JuniorParser where
 
+import Ast
 import Parser
-
-data Lit = Int Int
-         | String String
-         deriving (Show, Eq)
-
-data Expr = Decl [(String, Expr)]
-          | App Expr Expr
-          | Lam String Expr
-          | Let [(String, Expr)] Expr
-          | Literal Lit
-          | Var String
-          deriving (Show, Eq)
-
 
 infixOp :: String-> Expr -> Expr -> Expr
 infixOp s x y =  App (App (Var s) x) y
