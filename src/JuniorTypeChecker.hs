@@ -64,11 +64,14 @@ tp env e bt s =
                           s1 <- tp env e1 (TyLam a bt) s
                           tp env e2 a s1
 
-        (Let [(name, inV)] body) -> do a <- newTyVar
-                                       s1 <- tp env inV a s
-                                       let t = subs a s1
-                                       let newScheme = TyScheme (t, ((getTVarsOfType t) `Set.difference` (getTVarsOfEnv env)))
-                                       tp (addSc name newScheme env) body bt s1
+        (Let [] body) -> tp env body bt s
+
+        (Let ((name, inV):xs) body) -> do a <- newTyVar
+                                          s1 <- tp env inV a s
+                                          let t = subs a s1
+                                          let newScheme = TyScheme (t, ((getTVarsOfType t) `Set.difference` (getTVarsOfEnv env)))
+                                          let newEnv = addSc name newScheme env
+                                          tp  newEnv (Let xs body) bt s1
 
         (Decl [(name, body)]) -> do a <- newTyVar
                                     s1 <- tp env body bt s
