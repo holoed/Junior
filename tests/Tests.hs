@@ -125,7 +125,16 @@ main = hspec $ do
       typeOf (Let [("x",Literal (Int 42))] (Var "x"))
         `shouldBe` (TyCon("int", []))
 
+    it "should type check top level decl" $ do
+      typeOf (Decl [("x", Literal (Int 42))])
+        `shouldBe` (TyCon("int", []))
 
+
+{- Work in progress
+    it "should type check let expression with two bindings" $ do
+      typeOf (Let [("x",Literal (Int 42)), ("y", Literal (Int 24))] (App (App (Var "+") (Var "x")) (Var "y")))
+        `shouldBe` (TyCon("int", []))
+-}
 
 
 

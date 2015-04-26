@@ -58,20 +58,22 @@ tp env e bt s =
                          b <- newTyVar
                          let s1 = mgu bt (TyLam a b) s
                          let newEnv = addSc x (TyScheme (a, Set.empty)) env
-                         ret <- tp newEnv e' b s1
-                         return ret
-                          
+                         tp newEnv e' b s1
+
         (App e1 e2) -> do a <- newTyVar
                           s1 <- tp env e1 (TyLam a bt) s
-                          ret <- tp env e2 a s1
-                          return ret
-                                   
+                          tp env e2 a s1
+
         (Let [(name, inV)] body) -> do a <- newTyVar
                                        s1 <- tp env inV a s
                                        let t = subs a s1
                                        let newScheme = TyScheme (t, ((getTVarsOfType t) `Set.difference` (getTVarsOfEnv env)))
-                                       ret <- tp (addSc name newScheme env) body bt s1
-                                       return ret
+                                       tp (addSc name newScheme env) body bt s1
+
+        (Decl [(name, body)]) -> do a <- newTyVar
+                                    s1 <- tp env body bt s
+                                    let t = subs a s1
+                                    return (extend name t s1)
 
         _ -> fail "Not currently supported"
 
