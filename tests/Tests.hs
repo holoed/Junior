@@ -104,6 +104,10 @@ main = hspec $ do
       runParser globalDef ((0,0), "x = 42\ny = 32")
         `shouldBe` [(Decl [("x", Literal (Int 42)), ("y", Literal (Int 32))], ((1,6), ""))]
 
+    it "should parse a declaration with an embeded let expression" $ do
+      runParser globalDef ((0,0), "x = let y = 42 in y")
+        `shouldBe` [(Decl [("x", Let [("y", Literal (Int 42))] (Var "y"))], ((0,19), ""))]
+
   describe "Type Checker tests" $ do
     it "should type check literals" $ do
       typeOf (Literal (Int 42))
