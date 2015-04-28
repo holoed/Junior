@@ -25,9 +25,9 @@ term = atom `chainl1` mulOp
 expr :: Parser Expr
 expr = arith_expr `chainl1` (return App)
 
-globalDef :: Parser Expr
+globalDef :: Parser [Decl]
 globalDef = do ds <- many1_offside defn
-               return (Decl ds)
+               return (map (\(name, e) -> DeclValue name e) ds)
 
 atom :: Parser Expr
 atom = lam <||> local <||> var <||> lit <||> paren

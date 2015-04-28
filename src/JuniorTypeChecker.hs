@@ -11,6 +11,7 @@ import Unification
 import Substitutions
 import Data.Set as Set (empty, difference)
 import AlphaConverter
+import GHC.List as List (foldl)
 
 newTyVar :: State Int Type
 newTyVar = do x <- get
@@ -73,11 +74,6 @@ tp env e bt s =
                                           let newEnv = addSc name newScheme env
                                           tp  newEnv (Let xs body) bt s1
 
-        (Decl [(name, body)]) -> do a <- newTyVar
-                                    s1 <- tp env body bt s
-                                    let t = subs a s1
-                                    return (extend name t s1)
-
         _ -> fail "Not currently supported"
 
 predefinedEnv :: Env
@@ -86,8 +82,17 @@ predefinedEnv =  Env([("+", TyScheme ((TyLam integerCon (TyLam integerCon intege
                       ("-", TyScheme ((TyLam integerCon (TyLam integerCon integerCon)), Set.empty))] |> Map.fromList)
 
 typeOf :: Expr -> Type
-typeOf e = evalState (typeOf') 0 |> renameTVarsToLetters
+typeOf e = typeOfInEnv predefinedEnv e
+
+typeOfInEnv :: Env -> Expr -> Type
+typeOfInEnv env e = evalState (typeOf') 0 |> renameTVarsToLetters
      where typeOf' = do a <- newTyVar
                         let emptySubst = Subst (Map.empty)
-                        s1 <- tp predefinedEnv e a emptySubst
+                        s1 <- tp env e a emptySubst
                         return (subs a s1)
+
+typeOfDecl :: [Decl] -> [(String, Type)]
+typeOfDecl decls = let (_, tyDecls) = List.foldl (\(env, ts) (DeclValue name e) ->
+                                                          let t = typeOfInEnv env e
+                                                              newEnv = addSc name (TyScheme (t, Set.empty)) env
+                                                              in (newEnv, (name, t) : ts)) (predefinedEnv, []) decls in tyDecls

@@ -86,27 +86,27 @@ main = hspec $ do
   describe "Global declaration tests" $ do
     it "should parse a top level simple declaration" $ do
       runParser globalDef ((0,0), "x = 42")
-        `shouldBe` [(Decl [("x", Literal (Int 42))], ((0, 6), ""))]
+        `shouldBe` [([DeclValue "x" (Literal (Int 42))], ((0, 6), ""))]
 
     it "should parse a top level declaration with an arithmetic expression inside" $ do
       runParser globalDef ((0,0), "x = 3 + y")
-        `shouldBe` [(Decl [("x", App (App (Var "+") (Literal (Int 3))) (Var "y"))], ((0,9), ""))]
+        `shouldBe` [([DeclValue "x" (App (App (Var "+") (Literal (Int 3))) (Var "y"))], ((0,9), ""))]
 
     it "should parse a top level decl with a lambda inside" $ do
       runParser globalDef ((0,0), "f = \\x -> x")
-        `shouldBe` [(Decl [("f", Lam "x" (Var "x"))], ((0,11), ""))]
+        `shouldBe` [([DeclValue "f" (Lam "x" (Var "x"))], ((0,11), ""))]
 
     it "should parse a top level decl with a lambda containing an arithmetic expression" $ do
       runParser globalDef ((0,0), "f = \\x -> x + 1")
-        `shouldBe` [(Decl [("f", Lam "x" (App (App (Var "+") (Var "x")) (Literal (Int 1))))], ((0,15), ""))]
+        `shouldBe` [([DeclValue "f" (Lam "x" (App (App (Var "+") (Var "x")) (Literal (Int 1))))], ((0,15), ""))]
 
     it "should parse multiple top level declarations" $ do
       runParser globalDef ((0,0), "x = 42\ny = 32")
-        `shouldBe` [(Decl [("x", Literal (Int 42)), ("y", Literal (Int 32))], ((1,6), ""))]
+        `shouldBe` [([DeclValue "x" (Literal (Int 42)), DeclValue "y" (Literal (Int 32))], ((1,6), ""))]
 
     it "should parse a declaration with an embeded let expression" $ do
       runParser globalDef ((0,0), "x = let y = 42 in y")
-        `shouldBe` [(Decl [("x", Let [("y", Literal (Int 42))] (Var "y"))], ((0,19), ""))]
+        `shouldBe` [([DeclValue "x" (Let [("y", Literal (Int 42))] (Var "y"))], ((0,19), ""))]
 
   describe "Type Checker tests" $ do
     it "should type check literals" $ do
@@ -125,14 +125,21 @@ main = hspec $ do
       typeOf (Let [("x",Literal (Int 42))] (Var "x"))
         `shouldBe` (TyCon("int", []))
 
-    it "should type check top level decl" $ do
-      typeOf (Decl [("x", Literal (Int 42))])
-        `shouldBe` (TyCon("int", []))
-
     it "should type check let expression with two bindings" $ do
       typeOf (Let [("x",Literal (Int 42)), ("y", Literal (Int 24))] (App (App (Var "+") (Var "x")) (Var "y")))
         `shouldBe` (TyCon("int", []))
 
+    it "should type check top level decl" $ do
+      typeOfDecl [(DeclValue "x" (Literal (Int 42)))]
+        `shouldBe` [("x", TyCon("int", []))]
+
+    it "should type check top level two indipendent decls" $ do
+      typeOfDecl [DeclValue "x" (Literal (Int 42)), DeclValue "y" (Literal (String "Hello"))]
+        `shouldBe` [("y",TyCon ("string",[])),("x",TyCon ("int",[]))]
+
+    it "should type check top level with two decls" $ do
+      typeOfDecl [DeclValue "x" (Literal (Int 42)), DeclValue "y" (Var "x")]
+        `shouldBe` [("y",TyCon ("int",[])),("x",TyCon ("int",[]))]
 
 
 
