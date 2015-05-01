@@ -91,8 +91,9 @@ typeOfInEnv env e = evalState (typeOf') 0 |> renameTVarsToLetters
                         s1 <- tp env e a emptySubst
                         return (subs a s1)
 
-typeOfDecl :: [Decl] -> [(String, Type)]
-typeOfDecl decls = let (_, tyDecls) = List.foldl (\(env, ts) (DeclValue name e) ->
+typeOfProg :: Prog -> [(String, Type)]
+typeOfProg (Prog decls) =
+        let (_, tyDecls) = List.foldl (\(env, ts) (DeclValue name e) ->
                                                           let t = typeOfInEnv env e
                                                               newEnv = addSc name (TyScheme (t, Set.empty)) env
                                                               in (newEnv, (name, t) : ts)) (predefinedEnv, []) decls in tyDecls

@@ -15,3 +15,5 @@ data Expr = App Expr Expr
 
 data Decl = DeclValue String Expr
      deriving (Show, Eq)
+
+data Prog = Prog [Decl]

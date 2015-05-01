@@ -130,15 +130,15 @@ main = hspec $ do
         `shouldBe` (TyCon("int", []))
 
     it "should type check top level decl" $ do
-      typeOfDecl [(DeclValue "x" (Literal (Int 42)))]
+      typeOfProg (Prog [(DeclValue "x" (Literal (Int 42)))])
         `shouldBe` [("x", TyCon("int", []))]
 
     it "should type check top level two indipendent decls" $ do
-      typeOfDecl [DeclValue "x" (Literal (Int 42)), DeclValue "y" (Literal (String "Hello"))]
+      typeOfProg (Prog [DeclValue "x" (Literal (Int 42)), DeclValue "y" (Literal (String "Hello"))])
         `shouldBe` [("y",TyCon ("string",[])),("x",TyCon ("int",[]))]
 
     it "should type check top level with two decls" $ do
-      typeOfDecl [DeclValue "x" (Literal (Int 42)), DeclValue "y" (Var "x")]
+      typeOfProg (Prog [DeclValue "x" (Literal (Int 42)), DeclValue "y" (Var "x")])
         `shouldBe` [("y",TyCon ("int",[])),("x",TyCon ("int",[]))]
 
 
