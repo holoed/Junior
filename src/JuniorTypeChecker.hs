@@ -74,7 +74,6 @@ tp env e bt s =
                                           let newEnv = addSc name newScheme env
                                           tp  newEnv (Let xs body) bt s1
 
-        _ -> fail "Not currently supported"
 
 predefinedEnv :: Env
 predefinedEnv =  Env([("+", TyScheme ((TyLam integerCon (TyLam integerCon integerCon)), Set.empty)),
@@ -92,8 +91,9 @@ typeOfInEnv env e = evalState (typeOf') 0 |> renameTVarsToLetters
                         return (subs a s1)
 
 typeOfProg :: Prog -> [(String, Type)]
-typeOfProg (Prog decls) =
-        let (_, tyDecls) = List.foldl (\(env, ts) (DeclValue name e) ->
-                                                          let t = typeOfInEnv env e
-                                                              newEnv = addSc name (TyScheme (t, Set.empty)) env
-                                                              in (newEnv, (name, t) : ts)) (predefinedEnv, []) decls in tyDecls
+typeOfProg (Prog decls) = snd $ List.foldl typeCheckDecl (predefinedEnv, []) decls
+   where
+         typeCheckDecl :: (Env, [(String, Type)]) -> Decl -> (Env, [(String, Type)])
+         typeCheckDecl (env, ts) (DeclValue name e) = let t = typeOfInEnv env e
+                                                          newEnv = addSc name (TyScheme (t, Set.empty)) env
+                                                          in (newEnv, (name, t) : ts)
