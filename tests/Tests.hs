@@ -37,6 +37,7 @@ main = hspec $ do
       onside (5,1) (3,4) `shouldBe` False
 
   describe "literal tests" $ do
+
     it "should parse integer literal" $ do
       runParser lit ((0,0),"42")
         `shouldBe` [(Literal (Int 42), ((0,2), ""))]
@@ -49,7 +50,12 @@ main = hspec $ do
       runParser lit ((0,0), "'a'")
         `shouldBe` [(Literal (Char 'a'), ((0,3), ""))]
 
+    it "should parse float literal" $ do
+      runParser lit ((0,0), "13.64")
+        `shouldBe` [(Literal (Float 13.64), ((0,5), ""))]
+
   describe "lambda expression tests" $ do
+
     it "should parse lambda expression for identity function" $ do
       runParser lam ((0,0), "\\x -> x")
         `shouldBe` [(Lam "x" (Var "x"), ((0,7), ""))]
@@ -59,6 +65,7 @@ main = hspec $ do
         `shouldBe` [(Lam "x" (Lam "y" (App (App (Var "+") (Var "x")) (Var "y"))), ((0,17), ""))]
 
   describe "Let expression tests" $ do
+
     it "shoulbe parse simple let expression" $ do
       runParser expr ((0,0), "let x = v in x")
         `shouldBe` [(Let [("x",Var "v")] (Var "x"),((0,14),""))]
@@ -89,6 +96,7 @@ main = hspec $ do
          `shouldBe` [(Let [("f",Lam "x" (App (App (Var "+") (Var "x")) (Literal (Int 1))))] (App (Var "f") (Literal (Int 5))),((0,26),""))]
 
   describe "Global declaration tests" $ do
+
     it "should parse a top level simple declaration" $ do
       runParser globalDef ((0,0), "x = 42")
         `shouldBe` [([DeclValue "x" (Literal (Int 42))], ((0, 6), ""))]
@@ -114,6 +122,7 @@ main = hspec $ do
         `shouldBe` [([DeclValue "x" (Let [("y", Literal (Int 42))] (Var "y"))], ((0,19), ""))]
 
   describe "Type Checker tests" $ do
+
     it "should type check literals" $ do
       typeOf (Literal (Int 42))
         `shouldBe` (TyCon("int", []))

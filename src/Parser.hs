@@ -142,11 +142,11 @@ int = do f <- op
          return (f n)
       where op = do { char '-'; return negate } <|> return id
 
-integer :: Parser Int
-integer = token int
-
-natural :: Parser Int
-natural = token nat
+float :: Parser Float
+float = do m <- int
+           symbol "."
+           n <- nat
+           return (read ((show m) ++ "." ++ (show n))) -- TODO: Refactor to more efficient way.
 
 identifier :: [String] -> Parser String
 identifier ks = do x <- token ident

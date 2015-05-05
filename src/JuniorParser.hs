@@ -71,7 +71,8 @@ quoted_char = do symbol "'"
                  return c
 
 literal :: Parser Lit
-literal = fmap Int (token int) <||>
+literal = fmap Float (token float) <||>
+          fmap Int (token int) <||>
           fmap String (token quoted_string) <||>
           fmap Char (token  quoted_char)
 
