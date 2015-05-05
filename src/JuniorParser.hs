@@ -60,13 +60,20 @@ lit = fmap Literal literal
 
 quoted_string :: Parser String
 quoted_string = do symbol "\""
-                   s <- many' (sat (\x -> x /= '\"'))
+                   s <- many' (sat (/= '\"'))
                    symbol "\""
                    return s
 
+quoted_char :: Parser Char
+quoted_char = do symbol "'"
+                 c <- sat (/= '\'')
+                 symbol "'"
+                 return c
+
 literal :: Parser Lit
 literal = fmap Int (token int) <||>
-          fmap String (token quoted_string)
+          fmap String (token quoted_string) <||>
+          fmap Char (token  quoted_char)
 
 paren :: Parser Expr
 paren = brackets (symbol "(") expr (symbol ")")

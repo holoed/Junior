@@ -40,9 +40,14 @@ main = hspec $ do
     it "should parse integer literal" $ do
       runParser lit ((0,0),"42")
         `shouldBe` [(Literal (Int 42), ((0,2), ""))]
+
     it "should parse string literal" $ do
       runParser lit ((0,0), "\"Hello World\"")
         `shouldBe` [(Literal (String "Hello World"), ((0,13), ""))]
+
+    it "should parse char literal" $ do
+      runParser lit ((0,0), "'a'")
+        `shouldBe` [(Literal (Char 'a'), ((0,3), ""))]
 
   describe "lambda expression tests" $ do
     it "should parse lambda expression for identity function" $ do
