@@ -54,6 +54,26 @@ main = hspec $ do
       runParser lit ((0,0), "13.64")
         `shouldBe` [(Literal (Float 13.64), ((0,5), ""))]
 
+  describe "arithmetic tests" $ do
+
+    it "should parse addition" $ do
+      runParser arith_expr ((0,0), "x + y")
+        `shouldBe` [(App (App (Var "+") (Var "x")) (Var "y"), ((0,5), ""))]
+
+  describe "boolean expressions tests" $ do
+
+    it "should parse greater than expression" $ do
+      runParser bool_expr ((0,0), "x > y")
+        `shouldBe` [(App (App (Var ">") (Var "x")) (Var "y"), ((0,5), ""))]
+
+    it "should parse bool expression combined with arithmetic expression" $ do
+      runParser bool_expr ((0,0), "x + y > z ")
+        `shouldBe` [(App (App (Var ">") (App (App (Var "+") (Var "x")) (Var "y"))) (Var "z"), ((0,10), ""))]
+
+    it "should parse bool expression combined with arithmetic expression 2" $ do
+      runParser bool_expr ((0,0), "x > y + z ")
+        `shouldBe` [(App (App (Var ">") (Var "x")) (App (App (Var "+") (Var "y")) (Var "z")), ((0,10), ""))]
+
   describe "lambda expression tests" $ do
 
     it "should parse lambda expression for identity function" $ do

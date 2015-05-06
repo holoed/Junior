@@ -16,8 +16,16 @@ mulOp :: Parser (Expr -> Expr -> Expr)
 mulOp = (do { symbol "*"; return (infixOp "*") }) <||>
         (do { symbol "/"; return (infixOp "/") })
 
+cmpOp :: Parser (Expr -> Expr -> Expr)
+cmpOp = (do { symbol ">"; return (infixOp ">") }) <||>
+        (do { symbol "<"; return (infixOp "<") }) <||>
+        (do { symbol "=="; return (infixOp "==")})
+
 arith_expr :: Parser Expr
 arith_expr = term `chainl1` addOp
+
+bool_expr :: Parser Expr
+bool_expr = arith_expr `chainl1` cmpOp
 
 term :: Parser Expr
 term = atom `chainl1` mulOp
