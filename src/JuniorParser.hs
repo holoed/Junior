@@ -21,17 +21,8 @@ cmpOp = (do { symbol ">"; return (infixOp ">") }) <||>
         (do { symbol "<"; return (infixOp "<") }) <||>
         (do { symbol "=="; return (infixOp "==")})
 
-arith_expr :: Parser Expr
-arith_expr = term `chainl1` addOp
-
-bool_expr :: Parser Expr
-bool_expr = arith_expr `chainl1` cmpOp
-
-term :: Parser Expr
-term = atom `chainl1` mulOp
-
 expr :: Parser Expr
-expr = bool_expr `chainl1` (return App)
+expr = foldl chainl1 atom [mulOp, addOp, cmpOp, (return App)]
 
 globalDef :: Parser [Decl]
 globalDef = do ds <- many1_offside defn
