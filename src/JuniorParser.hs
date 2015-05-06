@@ -31,7 +31,7 @@ term :: Parser Expr
 term = atom `chainl1` mulOp
 
 expr :: Parser Expr
-expr = arith_expr `chainl1` (return App)
+expr = bool_expr `chainl1` (return App)
 
 globalDef :: Parser [Decl]
 globalDef = do ds <- many1_offside defn
