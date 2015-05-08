@@ -31,6 +31,15 @@ globalDef = do ds <- many1_offside defn
 atom :: Parser Expr
 atom = lam <||> local <||> var <||> lit <||> paren
 
+ifThenElse :: Parser Expr
+ifThenElse = do symbol "if"
+                e1 <- expr
+                symbol "then"
+                e2 <- expr
+                symbol "else"
+                e3 <- expr
+                return (IfThenElse e1 e2 e3)
+
 lam :: Parser Expr
 lam = do symbol "\\"
          x <- variable
@@ -69,17 +78,22 @@ quoted_char = do symbol "'"
                  symbol "'"
                  return c
 
+bool :: Parser Bool
+bool = do { symbol "True"; return True } <||>
+       do { symbol "False"; return False }
+
 literal :: Parser Lit
 literal = fmap Float (token float) <||>
           fmap Int (token int) <||>
           fmap String (token quoted_string) <||>
-          fmap Char (token  quoted_char)
+          fmap Char (token  quoted_char) <||>
+          fmap Bool (token bool)
 
 paren :: Parser Expr
 paren = brackets (symbol "(") expr (symbol ")")
 
 variable :: Parser String
-variable = identifier ["let", "in"]
+variable = identifier ["let", "in", "if", "then", "else"]
 
 
 

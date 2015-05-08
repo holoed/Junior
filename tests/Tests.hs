@@ -54,6 +54,10 @@ main = hspec $ do
       runParser lit ((0,0), "13.64")
         `shouldBe` [(Literal (Float 13.64), ((0,5), ""))]
 
+    it "should parse boolean literal" $ do
+      runParser lit ((0,0), "True")
+        `shouldBe` [(Literal (Bool True), ((0,4), ""))]
+
   describe "arithmetic tests" $ do
 
     it "should parse addition" $ do
@@ -81,6 +85,12 @@ main = hspec $ do
     it "should parse bool expression combined with arithmetic expression 2" $ do
       runParser expr ((0,0), "x > y + z ")
         `shouldBe` [(App (App (Var ">") (Var "x")) (App (App (Var "+") (Var "y")) (Var "z")), ((0,10), ""))]
+
+  describe "should parse if expressions" $ do
+
+    it "should parse simple if then else expression" $ do
+      runParser ifThenElse ((0,0), "if True then 12 else 25")
+        `shouldBe` [(IfThenElse (Literal (Bool True)) (Literal (Int 12)) (Literal (Int 25)), ((0,23), ""))]
 
   describe "lambda expression tests" $ do
 
