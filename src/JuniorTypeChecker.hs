@@ -28,7 +28,10 @@ charCon :: Type
 charCon = TyCon("char", [])
 
 stringCon :: Type
-stringCon = TyCon("string", [])        
+stringCon = TyCon("string", [])
+
+boolCon :: Type
+boolCon = TyCon("bool", [])
 
 litToTy :: Lit -> Type
 litToTy (Int _) = integerCon
@@ -78,7 +81,9 @@ tp env e bt s =
 predefinedEnv :: Env
 predefinedEnv =  Env([("+", TyScheme ((TyLam integerCon (TyLam integerCon integerCon)), Set.empty)),
                       ("*", TyScheme ((TyLam integerCon (TyLam integerCon integerCon)), Set.empty)),
-                      ("-", TyScheme ((TyLam integerCon (TyLam integerCon integerCon)), Set.empty))] |> Map.fromList)
+                      ("-", TyScheme ((TyLam integerCon (TyLam integerCon integerCon)), Set.empty)),
+                      (">", TyScheme ((TyLam integerCon (TyLam integerCon boolCon)), Set.empty)),
+                      ("<", TyScheme ((TyLam integerCon (TyLam integerCon boolCon)), Set.empty))] |> Map.fromList)
 
 typeOf :: Expr -> Type
 typeOf e = typeOfInEnv predefinedEnv e

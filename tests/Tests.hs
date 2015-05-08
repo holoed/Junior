@@ -163,6 +163,14 @@ main = hspec $ do
       typeOf (Lam "x" (App (App (Var "+") (Var "x")) (Literal (Int 1))))
         `shouldBe` (TyLam (TyCon("int", [])) (TyCon("int", [])))
 
+    it "should type check greater than expression" $ do
+      typeOf (Lam "x" (App (App (Var ">") (Var "x")) (Literal (Int 1))))
+        `shouldBe` (TyLam (TyCon("int", [])) (TyCon("bool", [])))
+
+    it "should type check less than expression" $ do
+      typeOf (Lam "x" (App (App (Var "<") (Var "x")) (Literal (Int 1))))
+        `shouldBe` (TyLam (TyCon("int", [])) (TyCon("bool", [])))
+
     it "should type check simple let expression" $ do
       typeOf (Let [("x",Literal (Int 42))] (Var "x"))
         `shouldBe` (TyCon("int", []))
