@@ -29,7 +29,7 @@ globalDef = do ds <- many1_offside defn
                return (map (uncurry DeclValue) ds)
 
 atom :: Parser Expr
-atom = lam <||> local <||> var <||> lit <||> paren
+atom = ifThenElse <||> lam <||> local <||> var <||> lit <||> paren
 
 ifThenElse :: Parser Expr
 ifThenElse = do symbol "if"

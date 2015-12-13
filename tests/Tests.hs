@@ -250,4 +250,22 @@ main = hspec $ do
     it "should eval prog 6" $
        runProg ("x = 6\r\n" ++
                 "y = x + 5\r\n" ++
-                "main = (x + y) * 3")  `shouldBe` [Const (Int 51)]
+                "main = (x + y) * 3") `shouldBe` [Const (Int 51)]
+
+    it "should eval prog 7" $
+       runProg ("main = let x = 23\r\n" ++
+                "           y = 12 in x + y") `shouldBe` [Const (Int 35)]
+
+    it "should eval prog 8" $ do
+       runProg "main = if True then 12 else 25" `shouldBe` [Const (Int 12)]
+       runProg "main = if False then 12 else 25" `shouldBe` [Const (Int 25)]
+
+    it "should eval prog 9" $
+       runProg ("n = 5\r\n" ++
+                "f = \\n -> if (n == 0) then 12 else 25 \r\n" ++
+                "main = f 5") `shouldBe` [Const (Int 25)]
+
+    it "should eval prog 10" $
+       runProg ("n = 5\r\n" ++
+                "fac = \\n -> if (n == 0) then 1 else (n * (fac (n - 1))) \r\n" ++
+                "main = fac 5") `shouldBe` [Const (Int 120)]
