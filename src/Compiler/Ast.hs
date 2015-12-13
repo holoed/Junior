@@ -1,4 +1,4 @@
-module Ast where
+module Compiler.Ast where
 
 data Lit = Int Int
          | String String

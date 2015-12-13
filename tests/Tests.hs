@@ -1,11 +1,11 @@
 module Main where
 
 import Data.Char
-import Ast
-import TypeTree
-import Parser
-import JuniorTypeChecker
-import JuniorParser
+import Compiler.Ast
+import Compiler.TypeInference.TypeTree
+import Compiler.Parser.BaseParsers
+import Compiler.TypeInference.TypeChecker
+import Compiler.Parser.JuniorParser
 import Test.Hspec
 import Control.Monad.Trans.State.Lazy
 import Control.Monad.Trans.Reader
@@ -200,12 +200,3 @@ main = hspec $ do
     it "should type check top level with two decls" $ do
       typeOfProg (Prog [DeclValue "x" (Literal (Int 42)), DeclValue "y" (Var "x")])
         `shouldBe` [("y",TyCon ("int",[])),("x",TyCon ("int",[]))]
-
-
-
-
-
-
-
-
-

@@ -1,7 +1,7 @@
 {-# LANGUAGE InstanceSigs #-}
 {-# OPTIONS_GHC -fno-warn-unused-do-bind  #-}
 
-module Parser where
+module Compiler.Parser.BaseParsers where
 
 import Prelude hiding (seq)
 import Data.Char
@@ -18,14 +18,14 @@ type PString = (Pos, String)
 type Parser a = ReaderT Pos (StateT PString []) a
 
 item :: Parser Char
-item = do s <- (lift get)
+item = do s <- lift get
           dpos <- ask
-          case s of 
-          	(_, []) -> mzero
-          	(pos, x:xs) ->  if (onside pos dpos)
-                                then do lift (put (newState (pos, x:xs)))
-          	                        return x 
-          	                else mzero
+          case s of
+              (_, []) -> mzero
+              (pos, x:xs) ->  if onside pos dpos
+                                  then do lift (put (newState (pos, x:xs)))
+                                          return x
+                              else mzero
 
 onside :: Pos -> Pos -> Bool
 onside (l, c) (dl, dc) = (c > dc) || (l == dl)
@@ -34,25 +34,25 @@ onside (l, c) (dl, dc) = (c > dc) || (l == dl)
 newState :: PString -> PString
 newState (pos, []) = (pos, [])
 newState ((l, c), x:xs) = (newpos, xs)
-	where newpos = case x of 
-		            '\n' -> (l + 1, 0)
-		            '\t' -> (l, ((c `div` 8) + 1) * 8)
-		            _ -> (l, c + 1)
+  where newpos = case x of
+                  '\n' -> (l + 1, 0)
+                  '\t' -> (l, ((c `div` 8) + 1) * 8)
+                  _ -> (l, c + 1)
 
 many1_offside :: Parser a -> Parser [a]
-many1_offside p = do (pos, _) <- (lift get)
-                     vs <- local (\_ -> pos) (many1 (off p))
-                     return vs
+many1_offside p = do (pos, _) <- lift get
+                     local (const pos) (many1 (off p))
+
 
 off :: Parser a -> Parser a
 off p = do (_, dc) <- ask
-           ((l, c), _) <- (lift get)
+           ((l, c), _) <- lift get
            guard (c == dc)
-           v <- local (\_ -> (l, dc)) p
-           return v
+           local (const (l, dc)) p
+
 
 first :: Parser a -> Parser a
-first p = mapReaderT (\m -> mapStateT (\xs -> take 1 xs) m) p
+first = mapReaderT (mapStateT (take 1))
 
 many' :: Parser a -> Parser [a]
 many' = first . many
@@ -107,11 +107,11 @@ string (x:xs) = do char x
 
 comment :: Parser ()
 comment = do string "--"
-             many' (sat (\x -> x /= '\n'))
+             many' (sat (/= '\n'))
              return ()
 
 junk :: Parser ()
-junk = do local (\_ -> (0, -1)) (many' (space <|> comment))
+junk = do local (const (0, -1)) (many' (space <|> comment))
           return ()
 
 token :: Parser a -> Parser a
@@ -146,11 +146,11 @@ float :: Parser Float
 float = do m <- int
            symbol "."
            n <- nat
-           return (read ((show m) ++ "." ++ (show n))) -- TODO: Refactor to more efficient way.
+           return (read (show m ++ "." ++ show n)) -- TODO: Refactor to more efficient way.
 
 identifier :: [String] -> Parser String
 identifier ks = do x <- token ident
-                   if not (elem x ks)
+                   if x `notElem` ks
                    then return x
                    else mzero
 
@@ -169,7 +169,7 @@ brackets open p close = do open
                            return x
 
 ints :: Parser [Int]
-ints = brackets (char '[') (int `sepBy1` (char ',')) (char ']')
+ints = brackets (char '[') (int `sepBy1` char ',') (char ']')
 
 chainl1 :: Parser a -> Parser (a -> a -> a) -> Parser a
 chainl1 p op = p >>= rest
@@ -182,20 +182,3 @@ chainr1 p op = p >>= rest
              where rest x = (do f <- op
                                 y <- chainr1 p op
                                 return (f x y)) <||> return x
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

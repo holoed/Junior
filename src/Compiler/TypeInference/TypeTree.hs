@@ -1,4 +1,4 @@
-module TypeTree where
+module Compiler.TypeInference.TypeTree where
 
 import Text.Printf
 

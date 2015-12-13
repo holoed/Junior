@@ -1,22 +1,22 @@
-module JuniorTypeChecker where
+module Compiler.TypeInference.TypeChecker where
 
-import Control.Monad.State 
-import TypeTree
-import Ast
-import Environments
+import Control.Monad.State
+import Compiler.TypeInference.TypeTree
+import Compiler.Ast
+import Compiler.TypeInference.Environments
 import Data.Map as Map
 import Data.Maybe (fromJust)
-import Utils
-import Unification
-import Substitutions
+import Compiler.Utils
+import Compiler.TypeInference.Unification
+import Compiler.TypeInference.Substitutions
 import Data.Set as Set (empty, difference)
-import AlphaConverter
+import Compiler.TypeInference.AlphaConverter
 import GHC.List as List (foldl)
 
 newTyVar :: State Int Type
 newTyVar = do x <- get
               put (x + 1)
-              return (TyVar ("T" ++ (show x)))
+              return (TyVar ("T" ++ show x))
 
 integerCon :: Type
 integerCon = TyCon("int", [])
@@ -37,7 +37,8 @@ litToTy :: Lit -> Type
 litToTy (Int _) = integerCon
 litToTy (Float _) = floatCon
 litToTy (Char _) = charCon
-litToTy (String  _) = stringCon      
+litToTy (String  _) = stringCon
+litToTy (Bool _) = boolCon
 
 findSc :: String -> Env -> TyScheme
 findSc n (Env e) = e |> Map.lookup n |> fromJust
@@ -51,10 +52,10 @@ addSc n sc (Env e) = Env (Map.insert n sc e)
 -- Calculate the principal type scheme for an expression in a given
 -- typing environment
 tp :: Env -> Expr -> Type -> Subst -> State Int Subst
-tp env e bt s = 
+tp env e bt s =
         case e of
         (Literal v) -> return (mgu (litToTy v) bt s)
-        (Var n) -> do if (not (containsSc n env)) then error ("Name " ++ n ++ " not found") else return ()
+        (Var n) -> do unless (containsSc n env) $ error ("Name " ++ n ++ " not found")
                       let (TyScheme (t, _)) = findSc n env
                       return (mgu (subs t s) bt s)
 
@@ -73,25 +74,25 @@ tp env e bt s =
         (Let ((name, inV):xs) body) -> do a <- newTyVar
                                           s1 <- tp env inV a s
                                           let t = subs a s1
-                                          let newScheme = TyScheme (t, ((getTVarsOfType t) `Set.difference` (getTVarsOfEnv env)))
+                                          let newScheme = TyScheme (t, getTVarsOfType t `Set.difference` getTVarsOfEnv env)
                                           let newEnv = addSc name newScheme env
                                           tp  newEnv (Let xs body) bt s1
 
 
 predefinedEnv :: Env
-predefinedEnv =  Env([("+", TyScheme ((TyLam integerCon (TyLam integerCon integerCon)), Set.empty)),
-                      ("*", TyScheme ((TyLam integerCon (TyLam integerCon integerCon)), Set.empty)),
-                      ("-", TyScheme ((TyLam integerCon (TyLam integerCon integerCon)), Set.empty)),
-                      (">", TyScheme ((TyLam integerCon (TyLam integerCon boolCon)), Set.empty)),
-                      ("<", TyScheme ((TyLam integerCon (TyLam integerCon boolCon)), Set.empty))] |> Map.fromList)
+predefinedEnv =  Env([("+", TyScheme (TyLam integerCon (TyLam integerCon integerCon), Set.empty)),
+                      ("*", TyScheme (TyLam integerCon (TyLam integerCon integerCon), Set.empty)),
+                      ("-", TyScheme (TyLam integerCon (TyLam integerCon integerCon), Set.empty)),
+                      (">", TyScheme (TyLam integerCon (TyLam integerCon boolCon), Set.empty)),
+                      ("<", TyScheme (TyLam integerCon (TyLam integerCon boolCon), Set.empty))] |> Map.fromList)
 
 typeOf :: Expr -> Type
-typeOf e = typeOfInEnv predefinedEnv e
+typeOf = typeOfInEnv predefinedEnv
 
 typeOfInEnv :: Env -> Expr -> Type
-typeOfInEnv env e = evalState (typeOf') 0 |> renameTVarsToLetters
+typeOfInEnv env e = evalState typeOf' 0 |> renameTVarsToLetters
      where typeOf' = do a <- newTyVar
-                        let emptySubst = Subst (Map.empty)
+                        let emptySubst = Subst Map.empty
                         s1 <- tp env e a emptySubst
                         return (subs a s1)
 
