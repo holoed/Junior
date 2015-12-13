@@ -6,6 +6,7 @@ import Compiler.TypeInference.TypeTree
 import Compiler.Parser.BaseParsers
 import Compiler.TypeInference.TypeChecker
 import Compiler.Parser.JuniorParser
+import Compiler.Interpreter.ExprInterpreter
 import Test.Hspec
 import Control.Monad.Trans.State.Lazy
 import Control.Monad.Trans.Reader
@@ -16,6 +17,10 @@ runParser m (p, s) = runStateT (runReaderT m p) (p,s)
 typeCheck :: String -> [(String, Type)]
 typeCheck s = do (ds, _) <- runParser globalDef ((0, 0), s)
                  typeOfProg (Prog ds)
+
+runProg :: String -> [Result]
+runProg s =  (do (ds, _) <- runParser globalDef ((0, 0), s)
+                 return (runState (evalProg (Prog ds)) executionEnvironment)) >>= fst
 
 main :: IO ()
 main = hspec $ do
@@ -223,3 +228,26 @@ main = hspec $ do
         `shouldBe` [([DeclValue "x" (Let [("y",Literal (Int 42))] (App (App (Var "+") (Var "y")) (Literal (Int 1))))],((1,16),""))]
       typeCheck code
         `shouldBe` [("x",TyCon ("int",[]))]
+
+  describe "Interpreter tests" $ do
+    it "should eval prog 1" $
+      runProg "main = 42" `shouldBe` [Const (Int 42)]
+
+    it "should eval prog 2" $
+      runProg "main = 2 + 3" `shouldBe` [Const (Int 5)]
+
+    it "should eval prog 3" $
+      runProg "main = (2 + 3) * 5" `shouldBe` [Const (Int 25)]
+
+    it "should eval prog 4" $
+      runProg "main = 2 + 3 * 5" `shouldBe` [Const (Int 17)]
+
+    it "should eval prog 5" $
+      runProg ("x = 6\r\n" ++
+               "y = 4\r\n" ++
+               "main = (x + y) * (x - y)") `shouldBe` [Const (Int 20)]
+
+    it "should eval prog 6" $
+       runProg ("x = 6\r\n" ++
+                "y = x + 5\r\n" ++
+                "main = (x + y) * 3")  `shouldBe` [Const (Int 51)]
