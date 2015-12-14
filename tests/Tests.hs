@@ -1,6 +1,7 @@
 module Main where
 
 import Data.Char
+import Control.Exception
 import Compiler.Ast
 import Compiler.TypeInference.TypeTree
 import Compiler.Parser.BaseParsers
@@ -209,6 +210,16 @@ main = hspec $ do
     it "should type check top level with two decls" $
       typeOfProg (Prog [DeclValue "x" (Literal (Int 42)), DeclValue "y" (Var "x")])
         `shouldBe` [("y",TyCon ("int",[])),("x",TyCon ("int",[]))]
+
+    it "should type check ifThenElse" $ do
+      evaluate(typeOf (IfThenElse (Literal (Int 42)) (Literal (Int 12)) (Literal (Int 25))))
+        `shouldThrow` errorCall "Unification error of TyCon (\"int\",[]) and TyCon (\"bool\",[])"
+      evaluate(typeOf (IfThenElse (Literal (Bool True)) (Literal (Bool False)) (Literal (Int 25))))
+        `shouldThrow` errorCall "Unification error of TyCon (\"int\",[]) and TyCon (\"bool\",[])"
+      evaluate(typeOf (IfThenElse (Literal (Bool True)) (Literal (Int 13)) (Literal (Bool True))))
+        `shouldThrow` errorCall "Unification error of TyCon (\"bool\",[]) and TyCon (\"int\",[])"
+      typeOf (IfThenElse (Literal (Bool True)) (Literal (Int 42)) (Literal (Int 25)))
+        `shouldBe` TyCon("int", [])
 
   describe "Parse and Type Check tests" $ do
 

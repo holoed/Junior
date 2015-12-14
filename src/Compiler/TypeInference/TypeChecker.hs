@@ -77,6 +77,10 @@ tp env e bt s =
                                           let newScheme = TyScheme (t, getTVarsOfType t `Set.difference` getTVarsOfEnv env)
                                           let newEnv = addSc name newScheme env
                                           tp  newEnv (Let xs body) bt s1
+        (IfThenElse e1 e2 e3) -> do s1 <- tp env e1 boolCon s
+                                    s2 <- tp env e2 bt s1
+                                    let t = subs bt s2
+                                    tp env e3 t s2
 
 
 predefinedEnv :: Env
