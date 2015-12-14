@@ -6,26 +6,31 @@ import Data.Functor.Identity
 import Data.Map
 import Data.Maybe
 
+makeFunction :: (Int -> Int -> a) -> (a -> Lit) -> Result
+makeFunction op mkLit = Function(\(Const (Int x)) ->
+                        return (Function(\(Const (Int y)) ->
+                        return (Const(mkLit (x `op` y))))))
+
 executionEnvironment:: Map String Result
 executionEnvironment = fromList[
-  ("+", Function(\(Const (Int x), _) -> Function(\(Const (Int y), _) -> Const(Int (x + y))))),
-  ("*", Function(\(Const (Int x), _) -> Function(\(Const (Int y), _) -> Const(Int (x * y))))),
-  ("-", Function(\(Const (Int x), _) -> Function(\(Const (Int y), _) -> Const(Int (x - y))))),
-  ("==", Function(\(Const (Int x), _) -> Function(\(Const (Int y), _) -> Const(Bool (x == y)))))
+  ("+", makeFunction (+) Int),
+  ("*", makeFunction (*) Int),
+  ("-", makeFunction (-) Int),
+  ("==", makeFunction (==) Bool)
   ]
 
 type Interpreter a = StateT (Map String Result) Identity a
 
 data Result = Const Lit
-            | Function ((Result, Map String Result) -> Result)
+            | Function (Result -> Interpreter Result)
 
 instance Show Result where
   show (Const x) = show x
-  show _ = fail "Cannot show function"
+  show _ = error "Cannot show a result function"
 
 instance Eq Result where
   (==) (Const x) (Const y) = x == y
-  (==) _ _ = undefined
+  (==) x y = error ("failed to compare " ++ show x ++ " and" ++ show y)
 
 evalProg :: Prog -> Interpreter [Result]
 evalProg (Prog decls) = do _ <- evalDecls decls
@@ -44,11 +49,12 @@ evalDecl (DeclValue s e) = do
 
 evalExpr :: Expr -> Interpreter Result
 evalExpr (Literal lit) = return (Const lit)
-evalExpr (Lam s e) = return (Function (\(x, env) -> evalState (evalExpr e) (insert s x env)))
+evalExpr (Lam s e) = return (Function (\x -> do env <- get
+                                                put (insert s x env)
+                                                evalExpr e))
 evalExpr (App e1 e2) = do (Function f) <- evalExpr e1
                           x <- evalExpr e2
-                          env <- get
-                          return (f (x, env))
+                          f x
 evalExpr (Var n) = do env <- get
                       let v = Data.Map.lookup n env
                       maybe (error ("Cannot find " ++ show n ++ " in environment")) return v
