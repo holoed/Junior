@@ -1,4 +1,4 @@
-module Utils where
+module Compiler.Utils where
 
 (|>) :: a -> (a -> b) -> b
 (|>) x f = f x
