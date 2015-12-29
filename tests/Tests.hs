@@ -19,9 +19,11 @@ typeCheck :: String -> [(String, Type)]
 typeCheck s = do (ds, _) <- runParser globalDef ((0, 0), s)
                  typeOfProg (Prog ds)
 
-runProg :: String -> [Result]
-runProg s =  (do (ds, _) <- runParser globalDef ((0, 0), s)
-                 return (runState (evalProg (Prog ds)) executionEnvironment)) >>= fst
+runProg :: String -> ([(String, Type)], [Result])
+runProg s = (ty, evalState (evalProg (Prog ds)) executionEnvironment)
+  where [(ds, _)] = runParser globalDef ((0, 0), s)
+        prog = Prog ds
+        ty = typeOfProg prog
 
 main :: IO ()
 main = hspec $ do
@@ -242,41 +244,45 @@ main = hspec $ do
 
   describe "Interpreter tests" $ do
     it "should eval prog 1" $
-      runProg "main = 42" `shouldBe` [Const (Int 42)]
+      runProg "main = 42" `shouldBe` ([("main", TyCon("int", []))], [Const (Int 42)])
 
     it "should eval prog 2" $
-      runProg "main = 2 + 3" `shouldBe` [Const (Int 5)]
+      runProg "main = 2 + 3" `shouldBe` ([("main", TyCon("int", []))], [Const (Int 5)])
 
     it "should eval prog 3" $
-      runProg "main = (2 + 3) * 5" `shouldBe` [Const (Int 25)]
+      runProg "main = (2 + 3) * 5" `shouldBe` ([("main", TyCon("int", []))], [Const (Int 25)])
 
     it "should eval prog 4" $
-      runProg "main = 2 + 3 * 5" `shouldBe` [Const (Int 17)]
+      runProg "main = 2 + 3 * 5" `shouldBe` ([("main", TyCon("int", []))], [Const (Int 17)])
 
     it "should eval prog 5" $
       runProg ("x = 6\r\n" ++
                "y = 4\r\n" ++
-               "main = (x + y) * (x - y)") `shouldBe` [Const (Int 20)]
+               "main = (x + y) * (x - y)") `shouldBe`
+               ([("main",TyCon ("int",[])),("y",TyCon ("int",[])),("x",TyCon ("int",[]))],[Const (Int 20)])
 
     it "should eval prog 6" $
        runProg ("x = 6\r\n" ++
                 "y = x + 5\r\n" ++
-                "main = (x + y) * 3") `shouldBe` [Const (Int 51)]
+                "main = (x + y) * 3") `shouldBe`
+                ([("main",TyCon ("int",[])),("y",TyCon ("int",[])),("x",TyCon ("int",[]))],[Const (Int 51)])
 
     it "should eval prog 7" $
        runProg ("main = let x = 23\r\n" ++
-                "           y = 12 in x + y") `shouldBe` [Const (Int 35)]
+                "           y = 12 in x + y") `shouldBe` ([("main", TyCon("int", []))], [Const (Int 35)])
 
     it "should eval prog 8" $ do
-       runProg "main = if True then 12 else 25" `shouldBe` [Const (Int 12)]
-       runProg "main = if False then 12 else 25" `shouldBe` [Const (Int 25)]
+       runProg "main = if True then 12 else 25" `shouldBe` ([("main", TyCon("int", []))], [Const (Int 12)])
+       runProg "main = if False then 12 else 25" `shouldBe` ([("main", TyCon("int", []))], [Const (Int 25)])
 
     it "should eval prog 9" $
        runProg ("n = 5\r\n" ++
                 "f = \\n -> if (n == 0) then 12 else 25 \r\n" ++
-                "main = f 5") `shouldBe` [Const (Int 25)]
+                "main = f 5") `shouldBe`
+                ([("main",TyCon ("int",[])),("f",TyLam (TyCon ("int",[])) (TyCon ("int",[]))),("n",TyCon ("int",[]))], [Const (Int 25)])
 
     it "should eval prog 10" $
        runProg ("n = 5\r\n" ++
                 "fac = \\n -> if (n == 0) then 1 else (n * (fac (n - 1))) \r\n" ++
-                "main = fac 5") `shouldBe` [Const (Int 120)]
+                "main = fac 5") `shouldBe`
+                ([("main",TyCon ("int",[])),("fac",TyLam (TyCon ("int",[])) (TyCon ("int",[]))),("n",TyCon ("int",[]))], [Const (Int 120)])

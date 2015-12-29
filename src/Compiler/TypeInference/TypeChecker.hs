@@ -5,7 +5,7 @@ import Compiler.TypeInference.TypeTree
 import Compiler.Ast
 import Compiler.TypeInference.Environments
 import Data.Map as Map
-import Data.Maybe (fromJust)
+import Data.Maybe (fromMaybe)
 import Compiler.Utils
 import Compiler.TypeInference.Unification
 import Compiler.TypeInference.Substitutions
@@ -41,7 +41,7 @@ litToTy (String  _) = stringCon
 litToTy (Bool _) = boolCon
 
 findSc :: String -> Env -> TyScheme
-findSc n (Env e) = e |> Map.lookup n |> fromJust
+findSc n (Env e) = e |> Map.lookup n |> fromMaybe (error ("Cannot find type scheme for " ++ show n) :: TyScheme)
 
 containsSc :: String -> Env -> Bool
 containsSc n (Env e) = Map.member n e
@@ -87,6 +87,7 @@ predefinedEnv :: Env
 predefinedEnv =  Env([("+", TyScheme (TyLam integerCon (TyLam integerCon integerCon), Set.empty)),
                       ("*", TyScheme (TyLam integerCon (TyLam integerCon integerCon), Set.empty)),
                       ("-", TyScheme (TyLam integerCon (TyLam integerCon integerCon), Set.empty)),
+                      ("==", TyScheme (TyLam integerCon (TyLam integerCon boolCon), Set.empty)),
                       (">", TyScheme (TyLam integerCon (TyLam integerCon boolCon), Set.empty)),
                       ("<", TyScheme (TyLam integerCon (TyLam integerCon boolCon), Set.empty))] |> Map.fromList)
 
@@ -94,7 +95,7 @@ typeOf :: Expr -> Type
 typeOf = typeOfInEnv predefinedEnv
 
 typeOfInEnv :: Env -> Expr -> Type
-typeOfInEnv env e = evalState typeOf' 0 |> renameTVarsToLetters
+typeOfInEnv env e = evalState typeOf' 1 |> renameTVarsToLetters
      where typeOf' = do a <- newTyVar
                         let emptySubst = Subst Map.empty
                         s1 <- tp env e a emptySubst
@@ -104,6 +105,7 @@ typeOfProg :: Prog -> [(String, Type)]
 typeOfProg (Prog decls) = snd $ List.foldl typeCheckDecl (predefinedEnv, []) decls
    where
          typeCheckDecl :: (Env, [(String, Type)]) -> Decl -> (Env, [(String, Type)])
-         typeCheckDecl (env, ts) (DeclValue name e) = let t = typeOfInEnv env e
-                                                          newEnv = addSc name (TyScheme (t, Set.empty)) env
-                                                          in (newEnv, (name, t) : ts)
+         typeCheckDecl (env, ts) (DeclValue name e) = let newEnv = addSc name (TyScheme (TyVar "T0", Set.empty)) env
+                                                          t = typeOfInEnv newEnv e
+                                                          newEnv' = addSc name (TyScheme (t, Set.empty)) env
+                                                          in (newEnv', (name, t) : ts)
