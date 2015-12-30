@@ -51,7 +51,9 @@ evalExpr :: Expr -> Interpreter Result
 evalExpr (Literal lit) = return (Const lit)
 evalExpr (Lam s e) = return (Function (\x -> do env <- get
                                                 put (insert s x env)
-                                                evalExpr e))
+                                                ret <- evalExpr e
+                                                put env
+                                                return ret))
 evalExpr (App e1 e2) = do (Function f) <- evalExpr e1
                           x <- evalExpr e2
                           f x

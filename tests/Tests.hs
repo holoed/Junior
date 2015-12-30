@@ -276,13 +276,16 @@ main = hspec $ do
        runProg "main = if False then 12 else 25" `shouldBe` ([("main", TyCon("int", []))], [Const (Int 25)])
 
     it "should eval prog 9" $
-       runProg ("n = 5\r\n" ++
-                "f = \\n -> if (n == 0) then 12 else 25 \r\n" ++
+       runProg ("f = \\n -> if (n == 0) then 12 else 25 \r\n" ++
                 "main = f 5") `shouldBe`
-                ([("main",TyCon ("int",[])),("f",TyLam (TyCon ("int",[])) (TyCon ("int",[]))),("n",TyCon ("int",[]))], [Const (Int 25)])
+                ([("main",TyCon ("int",[])),("f",TyLam (TyCon ("int",[])) (TyCon ("int",[])))], [Const (Int 25)])
 
     it "should eval prog 10" $
-       runProg ("n = 5\r\n" ++
-                "fac = \\n -> if (n == 0) then 1 else (n * (fac (n - 1))) \r\n" ++
+       runProg ("fac = \\n -> if (n == 0) then 1 else (n * (fac (n - 1))) \r\n" ++
                 "main = fac 5") `shouldBe`
-                ([("main",TyCon ("int",[])),("fac",TyLam (TyCon ("int",[])) (TyCon ("int",[]))),("n",TyCon ("int",[]))], [Const (Int 120)])
+                ([("main",TyCon ("int",[])),("fac",TyLam (TyCon ("int",[])) (TyCon ("int",[])))], [Const (Int 120)])
+
+    it "should eval prog 11" $
+       runProg ("fib = \\n -> if (n == 0) then 0 else (if (n == 1) then 1 else (if (n == 2) then 1 else ((fib (n - 1)) + (fib (n - 2))))) \r\n" ++
+                "main = fib 10") `shouldBe`
+                ([("main",TyCon ("int",[])),("fib",TyLam (TyCon ("int",[])) (TyCon ("int",[])))], [Const (Int 55)])
