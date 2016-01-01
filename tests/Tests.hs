@@ -11,6 +11,7 @@ import Compiler.Interpreter.ExprInterpreter
 import Test.Hspec
 import Control.Monad.Trans.State.Lazy
 import Control.Monad.Trans.Reader
+import Compiler.Interpreter.ExprFreeVar
 
 runParser :: Parser a -> PString -> [(a, PString)]
 runParser m (p, s) = runStateT (runReaderT m p) (p,s)
@@ -289,3 +290,41 @@ main = hspec $ do
        runProg ("fib = \\n -> if (n == 0) then 0 else (if (n == 1) then 1 else (if (n == 2) then 1 else ((fib (n - 1)) + (fib (n - 2))))) \r\n" ++
                 "main = fib 10") `shouldBe`
                 ([("main",TyCon ("int",[])),("fib",TyLam (TyCon ("int",[])) (TyCon ("int",[])))], [Const (Int 55)])
+
+  describe "Free Variables tests" $ do
+
+    it "should have free variable x" $
+      freeVar (Var "x") `shouldBe` ["x"]
+
+    it "should not have any free variable" $
+      freeVar (Lam "x" (Var "x")) `shouldBe` []
+
+    it "should have free variable y" $
+      freeVar (Lam "x" (Var "y")) `shouldBe` ["y"]
+
+    it "should have free variable x, y" $
+      freeVar (App (Var "x") (Var "y")) `shouldBe` ["x", "y"]
+
+    it "should have no free variables because all bound by let" $
+      freeVar (Let [("x", Literal (Int 42))] (Var "x")) `shouldBe` []
+
+    it "should have free variables not bound by let" $
+      freeVar (Let [("x", Literal (Int 42))] (Var "y")) `shouldBe` ["y"]
+
+    it "should have free variables not bound in the body of a let binding" $
+      freeVar (Let [("x", Var "y")] (Var "x")) `shouldBe` ["y"]
+
+    it "should have free variables not bound in the body of a let binding or in the body of the let" $
+      freeVar (Let [("x", Var "y")] (App (Var "f") (Var "x"))) `shouldBe` ["y", "f"]
+
+    it "should have free variable in the boolean expression" $
+      freeVar (IfThenElse (App (App (Var "==") (Var "x")) (Literal (Int 0))) (Literal (Int 2)) (Literal (Int 3))) `shouldBe` ["==", "x"]
+
+    it "should have free variable in the then expression" $
+      freeVar (IfThenElse (Literal (Bool True)) (Var "x") (Literal (Int 3))) `shouldBe` ["x"]
+
+    it "should have free variable in the else expression" $
+      freeVar (IfThenElse (Literal (Bool True)) (Literal (Int 2)) (Var "y")) `shouldBe` ["y"]
+
+    it "should have free variable in the if then and else expression" $
+      freeVar (IfThenElse (Var "b") (Var "x") (Var "y")) `shouldBe` ["b", "x", "y"]
