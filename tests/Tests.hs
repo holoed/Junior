@@ -1,6 +1,7 @@
 module Main where
 
 import Data.Char
+import Data.Map (member)
 import Control.Exception
 import Compiler.Ast
 import Compiler.TypeInference.TypeTree
@@ -8,10 +9,10 @@ import Compiler.Parser.BaseParsers
 import Compiler.TypeInference.TypeChecker
 import Compiler.Parser.JuniorParser
 import Compiler.Interpreter.ExprInterpreter
+import Compiler.Interpreter.ClosureConversion
 import Test.Hspec
 import Control.Monad.Trans.State.Lazy
 import Control.Monad.Trans.Reader
-import Compiler.Interpreter.ExprFreeVar
 
 runParser :: Parser a -> PString -> [(a, PString)]
 runParser m (p, s) = runStateT (runReaderT m p) (p,s)
@@ -20,11 +21,12 @@ typeCheck :: String -> [(String, Type)]
 typeCheck s = do (ds, _) <- runParser globalDef ((0, 0), s)
                  typeOfProg (Prog ds)
 
-runProg :: String -> ([(String, Type)], [Result])
-runProg s = (ty, evalState (evalProg (Prog ds)) executionEnvironment)
+runProg :: String -> ([String], [(String, Type)], [Result])
+runProg s = (fv, ty, evalState (evalProg (Prog ds)) executionEnvironment)
   where [(ds, _)] = runParser globalDef ((0, 0), s)
         prog = Prog ds
         ty = typeOfProg prog
+        fv = filter (\x -> not (member x executionEnvironment)) (freeVarProg prog)
 
 main :: IO ()
 main = hspec $ do
@@ -245,86 +247,95 @@ main = hspec $ do
 
   describe "Interpreter tests" $ do
     it "should eval prog 1" $
-      runProg "main = 42" `shouldBe` ([("main", TyCon("int", []))], [Const (Int 42)])
+      runProg "main = 42" `shouldBe` ([], [("main", TyCon("int", []))], [Const (Int 42)])
 
     it "should eval prog 2" $
-      runProg "main = 2 + 3" `shouldBe` ([("main", TyCon("int", []))], [Const (Int 5)])
+      runProg "main = 2 + 3" `shouldBe` ([], [("main", TyCon("int", []))], [Const (Int 5)])
 
     it "should eval prog 3" $
-      runProg "main = (2 + 3) * 5" `shouldBe` ([("main", TyCon("int", []))], [Const (Int 25)])
+      runProg "main = (2 + 3) * 5" `shouldBe` ([], [("main", TyCon("int", []))], [Const (Int 25)])
 
     it "should eval prog 4" $
-      runProg "main = 2 + 3 * 5" `shouldBe` ([("main", TyCon("int", []))], [Const (Int 17)])
+      runProg "main = 2 + 3 * 5" `shouldBe` ([], [("main", TyCon("int", []))], [Const (Int 17)])
 
     it "should eval prog 5" $
       runProg ("x = 6\r\n" ++
                "y = 4\r\n" ++
                "main = (x + y) * (x - y)") `shouldBe`
-               ([("main",TyCon ("int",[])),("y",TyCon ("int",[])),("x",TyCon ("int",[]))],[Const (Int 20)])
+               ([], [("main",TyCon ("int",[])),("y",TyCon ("int",[])),("x",TyCon ("int",[]))],[Const (Int 20)])
 
     it "should eval prog 6" $
        runProg ("x = 6\r\n" ++
                 "y = x + 5\r\n" ++
                 "main = (x + y) * 3") `shouldBe`
-                ([("main",TyCon ("int",[])),("y",TyCon ("int",[])),("x",TyCon ("int",[]))],[Const (Int 51)])
+                ([], [("main",TyCon ("int",[])),("y",TyCon ("int",[])),("x",TyCon ("int",[]))],[Const (Int 51)])
 
     it "should eval prog 7" $
        runProg ("main = let x = 23\r\n" ++
-                "           y = 12 in x + y") `shouldBe` ([("main", TyCon("int", []))], [Const (Int 35)])
+                "           y = 12 in x + y") `shouldBe` ([], [("main", TyCon("int", []))], [Const (Int 35)])
 
     it "should eval prog 8" $ do
-       runProg "main = if True then 12 else 25" `shouldBe` ([("main", TyCon("int", []))], [Const (Int 12)])
-       runProg "main = if False then 12 else 25" `shouldBe` ([("main", TyCon("int", []))], [Const (Int 25)])
+       runProg "main = if True then 12 else 25" `shouldBe` ([], [("main", TyCon("int", []))], [Const (Int 12)])
+       runProg "main = if False then 12 else 25" `shouldBe` ([], [("main", TyCon("int", []))], [Const (Int 25)])
 
     it "should eval prog 9" $
        runProg ("f = \\n -> if (n == 0) then 12 else 25 \r\n" ++
                 "main = f 5") `shouldBe`
-                ([("main",TyCon ("int",[])),("f",TyLam (TyCon ("int",[])) (TyCon ("int",[])))], [Const (Int 25)])
+                ([], [("main",TyCon ("int",[])),("f",TyLam (TyCon ("int",[])) (TyCon ("int",[])))], [Const (Int 25)])
 
     it "should eval prog 10" $
        runProg ("fac = \\n -> if (n == 0) then 1 else (n * (fac (n - 1))) \r\n" ++
                 "main = fac 5") `shouldBe`
-                ([("main",TyCon ("int",[])),("fac",TyLam (TyCon ("int",[])) (TyCon ("int",[])))], [Const (Int 120)])
+                ([], [("main",TyCon ("int",[])),("fac",TyLam (TyCon ("int",[])) (TyCon ("int",[])))], [Const (Int 120)])
 
     it "should eval prog 11" $
        runProg ("fib = \\n -> if (n == 0) then 0 else (if (n == 1) then 1 else (if (n == 2) then 1 else ((fib (n - 1)) + (fib (n - 2))))) \r\n" ++
                 "main = fib 10") `shouldBe`
-                ([("main",TyCon ("int",[])),("fib",TyLam (TyCon ("int",[])) (TyCon ("int",[])))], [Const (Int 55)])
+                ([], [("main",TyCon ("int",[])),("fib",TyLam (TyCon ("int",[])) (TyCon ("int",[])))], [Const (Int 55)])
 
   describe "Free Variables tests" $ do
 
     it "should have free variable x" $
-      freeVar (Var "x") `shouldBe` ["x"]
+      freeVarExpr (Var "x") `shouldBe` ["x"]
 
     it "should not have any free variable" $
-      freeVar (Lam "x" (Var "x")) `shouldBe` []
+      freeVarExpr (Lam "x" (Var "x")) `shouldBe` []
 
     it "should have free variable y" $
-      freeVar (Lam "x" (Var "y")) `shouldBe` ["y"]
+      freeVarExpr (Lam "x" (Var "y")) `shouldBe` ["y"]
 
     it "should have free variable x, y" $
-      freeVar (App (Var "x") (Var "y")) `shouldBe` ["x", "y"]
+      freeVarExpr (App (Var "x") (Var "y")) `shouldBe` ["x", "y"]
 
     it "should have no free variables because all bound by let" $
-      freeVar (Let [("x", Literal (Int 42))] (Var "x")) `shouldBe` []
+      freeVarExpr (Let [("x", Literal (Int 42))] (Var "x")) `shouldBe` []
 
     it "should have free variables not bound by let" $
-      freeVar (Let [("x", Literal (Int 42))] (Var "y")) `shouldBe` ["y"]
+      freeVarExpr (Let [("x", Literal (Int 42))] (Var "y")) `shouldBe` ["y"]
 
     it "should have free variables not bound in the body of a let binding" $
-      freeVar (Let [("x", Var "y")] (Var "x")) `shouldBe` ["y"]
+      freeVarExpr (Let [("x", Var "y")] (Var "x")) `shouldBe` ["y"]
 
     it "should have free variables not bound in the body of a let binding or in the body of the let" $
-      freeVar (Let [("x", Var "y")] (App (Var "f") (Var "x"))) `shouldBe` ["y", "f"]
+      freeVarExpr (Let [("x", Var "y")] (App (Var "f") (Var "x"))) `shouldBe` ["y", "f"]
 
     it "should have free variable in the boolean expression" $
-      freeVar (IfThenElse (App (App (Var "==") (Var "x")) (Literal (Int 0))) (Literal (Int 2)) (Literal (Int 3))) `shouldBe` ["==", "x"]
+      freeVarExpr (IfThenElse (App (App (Var "==") (Var "x")) (Literal (Int 0))) (Literal (Int 2)) (Literal (Int 3))) `shouldBe` ["==", "x"]
 
     it "should have free variable in the then expression" $
-      freeVar (IfThenElse (Literal (Bool True)) (Var "x") (Literal (Int 3))) `shouldBe` ["x"]
+      freeVarExpr (IfThenElse (Literal (Bool True)) (Var "x") (Literal (Int 3))) `shouldBe` ["x"]
 
     it "should have free variable in the else expression" $
-      freeVar (IfThenElse (Literal (Bool True)) (Literal (Int 2)) (Var "y")) `shouldBe` ["y"]
+      freeVarExpr (IfThenElse (Literal (Bool True)) (Literal (Int 2)) (Var "y")) `shouldBe` ["y"]
 
     it "should have free variable in the if then and else expression" $
-      freeVar (IfThenElse (Var "b") (Var "x") (Var "y")) `shouldBe` ["b", "x", "y"]
+      freeVarExpr (IfThenElse (Var "b") (Var "x") (Var "y")) `shouldBe` ["b", "x", "y"]
+
+    it "should have no free variables in decl" $
+      freeVarDecl (DeclValue "x" (Literal (Int 42))) `shouldBe` []
+
+    it "should have free variables in decl" $
+      freeVarDecl (DeclValue "x" (Var "y")) `shouldBe` ["y"]
+
+    it "should have no free variables in prog" $
+      freeVarProg (Prog [DeclValue "x" (Literal (Int 42)), DeclValue "y" (Var "x")]) `shouldBe` []
