@@ -2,6 +2,7 @@
 
 module Compiler.Parser.JuniorParser where
 
+import Control.Applicative
 import Compiler.Ast
 import Compiler.Parser.BaseParsers
 
@@ -9,16 +10,16 @@ infixOp :: String-> Expr -> Expr -> Expr
 infixOp s x =  App (App (Var s) x)
 
 addOp :: Parser (Expr -> Expr -> Expr)
-addOp = (do { symbol "+"; return (infixOp "+") }) <||>
+addOp = (do { symbol "+"; return (infixOp "+") }) <|>
         (do { symbol "-"; return (infixOp "-") })
 
 mulOp :: Parser (Expr -> Expr -> Expr)
-mulOp = (do { symbol "*"; return (infixOp "*") }) <||>
+mulOp = (do { symbol "*"; return (infixOp "*") }) <|>
         (do { symbol "/"; return (infixOp "/") })
 
 cmpOp :: Parser (Expr -> Expr -> Expr)
-cmpOp = (do { symbol ">"; return (infixOp ">") }) <||>
-        (do { symbol "<"; return (infixOp "<") }) <||>
+cmpOp = (do { symbol ">"; return (infixOp ">") }) <|>
+        (do { symbol "<"; return (infixOp "<") }) <|>
         (do { symbol "=="; return (infixOp "==")})
 
 expr :: Parser Expr
@@ -29,7 +30,7 @@ globalDef = do ds <- many1_offside defn
                return (map (uncurry DeclValue) ds)
 
 atom :: Parser Expr
-atom = ifThenElse <||> lam <||> local <||> var <||> lit <||> paren
+atom = ifThenElse <|> lam <|> local <|> var <|> lit <|> paren
 
 ifThenElse :: Parser Expr
 ifThenElse = do symbol "if"
@@ -68,7 +69,7 @@ lit = fmap Literal literal
 
 quotedString :: Parser String
 quotedString = do symbol "\""
-                  s <- many' (sat (/= '\"'))
+                  s <- many (sat (/= '\"'))
                   symbol "\""
                   return s
 
@@ -79,14 +80,14 @@ quotedChar = do symbol "'"
                 return c
 
 bool :: Parser Bool
-bool = do { symbol "True"; return True } <||>
+bool = do { symbol "True"; return True } <|>
        do { symbol "False"; return False }
 
 literal :: Parser Lit
-literal = fmap Float (token float) <||>
-          fmap Int (token int) <||>
-          fmap String (token quotedString) <||>
-          fmap Char (token  quotedChar) <||>
+literal = fmap Float (token float) <|>
+          fmap Int (token int) <|>
+          fmap String (token quotedString) <|>
+          fmap Char (token  quotedChar) <|>
           fmap Bool (token bool)
 
 paren :: Parser Expr

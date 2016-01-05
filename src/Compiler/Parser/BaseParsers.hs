@@ -10,12 +10,14 @@ import Control.Monad
 import Control.Monad.Trans
 import Control.Monad.Trans.State.Lazy
 import Control.Monad.Trans.Reader
+import Control.Monad.Trans.Maybe
+import Control.Monad.Identity
 
 type Pos = (Int, Int)
 
 type PString = (Pos, String)
 
-type Parser a = ReaderT Pos (StateT PString []) a
+type Parser a = ReaderT Pos (StateT PString (MaybeT Identity)) a
 
 item :: Parser Char
 item = do s <- lift get
@@ -50,16 +52,6 @@ off p = do (_, dc) <- ask
            guard (c == dc)
            local (const (l, dc)) p
 
-
-first :: Parser a -> Parser a
-first = mapReaderT (mapStateT (take 1))
-
-many' :: Parser a -> Parser [a]
-many' = first . many
-
-(<||>) :: Parser a -> Parser a -> Parser a
-p <||> q =  first (p <|> q)
-
 seq :: Parser a -> Parser b -> Parser (a, b)
 seq p q = do  x <- p
               y <- q
@@ -83,20 +75,20 @@ upper :: Parser Char
 upper = sat isUpper
 
 letter :: Parser Char
-letter = lower <||> upper
+letter = lower <|> upper
 
 alphanum :: Parser Char
-alphanum = letter <||> digit
+alphanum = letter <|> digit
 
 word :: Parser String
-word = many' letter
+word = many letter
 
 space :: Parser ()
 space = do sat isSpace
            return ()
 
 spaces :: Parser ()
-spaces = do many' space
+spaces = do many space
             return ()
 
 string :: String -> Parser String
@@ -107,11 +99,11 @@ string (x:xs) = do char x
 
 comment :: Parser ()
 comment = do string "--"
-             many' (sat (/= '\n'))
+             many (sat (/= '\n'))
              return ()
 
 junk :: Parser ()
-junk = do local (const (0, -1)) (many' (space <|> comment))
+junk = do local (const (0, -1)) (many (space <|> comment))
           return ()
 
 token :: Parser a -> Parser a
@@ -125,12 +117,12 @@ symbol cs = token (string cs)
 
 ident :: Parser String
 ident = do x  <- lower
-           xs <- first (many' alphanum)
+           xs <- many alphanum
            return (x:xs)
 
 many1 :: Parser a -> Parser [a]
 many1 p = do x  <- p
-             xs <- many' p
+             xs <- many p
              return (x:xs)
 
 nat :: Parser Int
@@ -156,11 +148,11 @@ identifier ks = do x <- token ident
 
 sepBy1 :: Parser a -> Parser b -> Parser [a]
 sepBy1 p sep = do x  <- p
-                  xs <- many' (do { sep; p })
+                  xs <- many (do { sep; p })
                   return (x:xs)
 
 sepBy :: Parser a -> Parser b -> Parser [a]
-sepBy p sep = sepBy1 p sep <||> return []
+sepBy p sep = sepBy1 p sep <|> return []
 
 brackets :: Parser a -> Parser b -> Parser c -> Parser b
 brackets open p close = do open
@@ -175,10 +167,10 @@ chainl1 :: Parser a -> Parser (a -> a -> a) -> Parser a
 chainl1 p op = p >>= rest
              where rest x = (do f <- op
                                 y <- p
-                                rest (f x y)) <||> return x
+                                rest (f x y)) <|> return x
 
 chainr1 :: Parser a -> Parser (a -> a -> a) -> Parser a
 chainr1 p op = p >>= rest
              where rest x = (do f <- op
                                 y <- chainr1 p op
-                                return (f x y)) <||> return x
+                                return (f x y)) <|> return x

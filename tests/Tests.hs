@@ -1,6 +1,7 @@
 module Main where
 
 import Data.Char
+import Data.Maybe (maybeToList)
 import Data.Map (member)
 import Control.Exception
 import Compiler.Ast
@@ -13,9 +14,11 @@ import Compiler.Interpreter.ClosureConversion
 import Test.Hspec
 import Control.Monad.Trans.State.Lazy
 import Control.Monad.Trans.Reader
+import Control.Monad.Trans.Maybe
+import Control.Monad.Identity
 
 runParser :: Parser a -> PString -> [(a, PString)]
-runParser m (p, s) = runStateT (runReaderT m p) (p,s)
+runParser m (p, s) = maybeToList $ runIdentity (runMaybeT (runStateT (runReaderT m p) (p,s)))
 
 typeCheck :: String -> [(String, Type)]
 typeCheck s = do (ds, _) <- runParser globalDef ((0, 0), s)
