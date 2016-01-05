@@ -10,7 +10,7 @@ import Compiler.Parser.BaseParsers
 import Compiler.TypeInference.TypeChecker
 import Compiler.Parser.JuniorParser
 import Compiler.Interpreter.ExprInterpreter
-import Compiler.Interpreter.ClosureConversion
+import Compiler.Transformations.FreeVar
 import Test.Hspec
 import Control.Monad.Trans.State.Lazy
 import Control.Monad.Trans.Reader

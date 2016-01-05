@@ -14,5 +14,5 @@ data ExprC = App ExprC ExprC
           | LambdaConverted String ExprC
      deriving (Show, Eq)
 
-data Decl = DeclValue String ExprC
+data DeclC = DeclValue String ExprC
      deriving (Show, Eq)
