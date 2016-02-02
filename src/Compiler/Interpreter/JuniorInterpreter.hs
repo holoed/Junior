@@ -1,4 +1,4 @@
-module Compiler.Interpreter.ExprInterpreter where
+module Compiler.Interpreter.JuniorInterpreter where
 
 import Compiler.Ast
 import Control.Monad.Trans.State
