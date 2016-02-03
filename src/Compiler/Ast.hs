@@ -7,7 +7,7 @@ data Lit = Int Int
          | Bool Bool
      deriving (Show, Eq)
 
-data Expr = App Expr Expr
+data Expr  = App Expr Expr
           | Lam String Expr
           | Let [(String, Expr)] Expr
           | Literal Lit
