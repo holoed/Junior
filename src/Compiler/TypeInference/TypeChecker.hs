@@ -55,6 +55,7 @@ tp :: Env -> Expr -> Type -> Subst -> State Int Subst
 tp env e bt s =
         case e of
         (Literal v) -> return (mgu (litToTy v) bt s)
+
         (Var n) -> do unless (containsSc n env) $ error ("Name " ++ n ++ " not found")
                       let (TyScheme (t, _)) = findSc n env
                       return (mgu (subs t s) bt s)
@@ -71,12 +72,13 @@ tp env e bt s =
 
         (Let [] body) -> tp env body bt s
 
-        (Let ((name, inV):xs) body) -> do a <- newTyVar
+        (Let ((name, inV):xs) body) -> do a <- fmap TyPoly newTyVar
                                           s1 <- tp env inV a s
                                           let t = subs a s1
                                           let newScheme = TyScheme (t, getTVarsOfType t `Set.difference` getTVarsOfEnv env)
                                           let newEnv = addSc name newScheme env
                                           tp  newEnv (Let xs body) bt s1
+
         (IfThenElse e1 e2 e3) -> do s1 <- tp env e1 boolCon s
                                     s2 <- tp env e2 bt s1
                                     let t = subs bt s2

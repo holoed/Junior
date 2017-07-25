@@ -80,3 +80,8 @@ typeCheckerTests = do
         `shouldBe` [([DeclValue "x" (Let [("y",Literal (Int 42))] (App (App (Var "+") (Var "y")) (Literal (Int 1))))],((1,16),""))]
       typeCheck code
         `shouldBe` [("x",TyCon ("int",[]))]
+
+    it "should type check poly call" $
+      let code = "ret = let f = \\x -> \\y -> x in (f 5 'a') + (f 6 7)" in do
+      typeCheck code
+        `shouldBe` [("ret",TyCon ("int",[]))]

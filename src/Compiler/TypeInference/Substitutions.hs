@@ -19,3 +19,4 @@ subs t@(TyVar n) s = let t' = Compiler.TypeInference.Substitutions.lookup n s in
                      else subs t' s
 subs (TyLam a r) s = TyLam (subs a s) (subs r s)
 subs (TyCon (name, tyArgs)) s = TyCon (name, tyArgs |> map (`subs` s))
+subs (TyPoly t) s = subs t s

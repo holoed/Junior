@@ -1,0 +1,153 @@
+let compose = \f -> \g -> \x -> f (g x) in
+
+let foldLeft = \f -> \v -> \xs ->
+  if (isEmpty xs) then v
+  else foldLeft f (f v (head xs)) (tail xs) in
+
+let id = \x -> x in
+
+let foldRight = \f -> \v -> \xs ->
+  foldLeft (\g -> \b -> \x -> g (f b x)) id xs v in
+
+let append = \xs -> \ys ->
+  if (isEmpty xs) then ys
+  else (head xs) : (append (tail xs) ys) in
+
+let concat = \xss ->
+  if (isEmpty xss) then empty
+  else append (head xss) (concat (tail xss)) in
+
+let range = \startIndex -> \endIndex ->
+    let range' = \acc -> \endIndex ->
+      if (startIndex > endIndex) then acc
+      else range' (endIndex : acc) (endIndex - 1) in
+    range' empty endIndex in
+
+let fmap = \f -> \xs ->
+  foldRight (\x -> \acc -> (f x) : acc) empty xs in
+
+let flatMap = \f -> compose concat (fmap f) in
+
+let isSpace = \ch -> ch == " " in
+
+let isDigit = \ch -> (ch == "0") || (ch == "1") ||
+                     (ch == "2") || (ch == "3") ||
+                     (ch == "4") || (ch == "5") ||
+                     (ch == "6") || (ch == "7") ||
+                     (ch == "8") || (ch == "9") in
+
+let bind = \m -> \f -> \cs ->
+  let xs = m cs in
+  if (isEmpty xs) then empty
+  else let n = head xs in f (fst n) (snd n) in
+
+let return = \x -> \cs -> ((mkTuple2 x cs) : empty) in
+
+let fail = \cs -> empty in
+
+let item = \cs ->
+  if (isEmpty cs) then empty
+  else let ch = (head cs) in ((mkTuple2 ch (tail cs)) : empty) in
+
+let sep = \p -> \q -> bind p (\x ->
+                      bind q (\y ->
+                      return (mkTuple2 x y))) in
+
+let sat = \p -> bind item (\ch -> if (p ch) then return ch else fail) in
+
+let chr = \x -> sat (\ch -> ch == x) in
+
+let choice = \p -> \q -> \cs ->
+  let xs = p cs in
+  if (isEmpty xs) then q cs
+  else xs in
+
+let many = \p -> choice (bind p (\x ->
+                         bind (many p) (\xs ->
+                         return (x:xs)))) (return empty) in
+
+let digit = sat isDigit in
+
+let lower = sat isLower in
+
+let upper = sat isUpper in
+
+let letter = choice lower upper in
+
+let alphanum = choice letter digit in
+
+let word = many letter in
+
+let space = bind (sat isSpace)(\x -> return ()) in
+
+let spaces = bind (many space)(\x -> return ()) in
+
+let str = \txt ->
+  let xs = stringToCharList txt in
+  let str' = \xs ->
+   if (isEmpty xs) then return empty
+   else let x = head xs in
+        let xs' = tail xs in
+        bind (chr x) (\a ->
+        bind (str' xs') (\b ->
+        return (x:xs'))) in
+  bind (str' xs) (\ys -> return (charListToString ys)) in
+
+let junk = bind (many space) (\a -> return ()) in
+
+let token = \p -> bind p (\x ->
+                  bind junk (\a ->
+                  return x)) in
+
+let parse = \p -> bind junk (\a -> p) in
+
+let symbol = \txt -> token (str txt) in
+
+let ident = bind lower (\x ->
+            bind (many alphanum) (\xs ->
+            return (charListToString (x:xs)))) in
+
+let many1 = \p -> bind p (\x ->
+                  bind (many p) (\xs ->
+                  return (x:xs))) in
+
+let nat = bind (many1 digit) (\xs -> return (stringToInt (charListToString xs))) in
+
+let integer =
+  let op = choice (bind (chr "-")(\x ->
+                    return neg)) (return (\x -> x)) in
+  bind op (\f ->
+  bind nat (\n ->
+  return (f n))) in
+
+let makeFloat = \m -> \n ->
+  if (m > 0) then m + (n * (1 / (size n)))
+             else m - (n * (1 / (size n))) in
+
+let float =
+  bind integer (\m ->
+  bind (symbol ".")(\x ->
+  bind nat (\n ->
+  return (makeFloat m n)))) in
+
+let identifier = \ks ->
+  bind (token ident)(\x -> if (notElem x ks) then (return x) else fail) in
+
+let variable = identifier ("let":("in":("if":("then":("else":empty))))) in
+
+let var = bind variable (\s -> return (evar s)) in
+
+let lit = bind (token integer) (\n -> return (elit n)) in
+
+let expr =
+  let local = bind (symbol "let")(\i1 ->
+              bind variable (\v ->
+              bind (symbol "=")(\i2 ->
+              bind lit (\e1 ->
+              bind (symbol "in")(\i3 ->
+              bind var (\e2 ->
+              return (elet v e1 e2))))))) in
+  let atom = choice local (choice var lit) in
+  atom in
+
+parse expr "let x = 42 in x"

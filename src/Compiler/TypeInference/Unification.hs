@@ -15,4 +15,5 @@ mgu a b s = case (subs a s, subs b s) of
                (TyLam a1 b1,TyLam a2 b2) -> mgu a1 a2 (mgu b1 b2 s)
                (TyCon (name1, args1), TyCon(name2, args2)) | name1 == name2 ->
                         (s, args1, args2) |||> fold2 (\ subst t1 t2 -> mgu t1 t2 subst)
+               (TyPoly x, y) -> error ("Poly " ++ show x)
                (x, y) -> error ("Unification error of " ++ show x ++ " and " ++ show y)
