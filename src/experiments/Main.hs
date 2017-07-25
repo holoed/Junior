@@ -131,5 +131,5 @@ printResult (Function _) = "<fun>"
 
 main :: IO ()
 main = do
-  txt <- readFile "Code.foo"
+  txt <- readFile "Code.jnr"
   putStrLn $ printResult $ run txt
