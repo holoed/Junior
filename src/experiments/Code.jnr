@@ -140,14 +140,18 @@ let var = bind variable (\s -> return (evar s)) in
 let lit = bind (token integer) (\n -> return (elit n)) in
 
 let expr =
+  let parens = bind (symbol "(")(\i1 ->
+               bind expr (\e ->
+               bind (symbol ")")(\i2 ->
+               return e))) in
   let local = bind (symbol "let")(\i1 ->
               bind variable (\v ->
               bind (symbol "=")(\i2 ->
-              bind lit (\e1 ->
+              bind expr (\e1 ->
               bind (symbol "in")(\i3 ->
-              bind var (\e2 ->
+              bind expr (\e2 ->
               return (elet v e1 e2))))))) in
-  let atom = choice local (choice var lit) in
+  let atom = choice (choice (choice local var) lit) parens in
   atom in
 
-parse expr "let x = 42 in x"
+parse expr "let x = (42) in x"
