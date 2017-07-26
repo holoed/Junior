@@ -151,6 +151,8 @@ let chainr1 = \p -> \op ->
                            return (f x y)))) (return x) in
   bind p rest in
 
+let infixOp = \s -> \x -> \y -> eapp (eapp (evar s) x) y in
+
 let expr =
   let parens = bind (symbol "(")(\i1 ->
                bind expr (\e ->

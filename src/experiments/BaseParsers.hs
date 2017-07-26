@@ -1,7 +1,7 @@
 {-# LANGUAGE InstanceSigs #-}
 {-# OPTIONS_GHC -fno-warn-unused-do-bind  #-}
 
-module BaseParsers where
+module Experiments.BaseParsers where
 
 import Prelude hiding (seq)
 import Data.Char

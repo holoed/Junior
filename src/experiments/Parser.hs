@@ -1,6 +1,6 @@
 {-# OPTIONS_GHC -fno-warn-unused-do-bind  #-}
 
-module Parser where
+module Experiments.Parser where
 
 import Control.Applicative
 import Control.Monad.Trans.State.Lazy
@@ -8,8 +8,8 @@ import Control.Monad.Trans.Reader hiding (local)
 import Control.Monad.Trans.Maybe
 import Control.Monad.Identity
 import Data.Maybe
-import qualified Ast
-import BaseParsers
+import qualified Experiments.Ast as Ast
+import Experiments.BaseParsers
 
 infixOp :: String-> Ast.Exp -> Ast.Exp -> Ast.Exp
 infixOp s x =  Ast.app (Ast.app (Ast.var s) x)
