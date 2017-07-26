@@ -139,6 +139,18 @@ let var = bind variable (\s -> return (evar s)) in
 
 let lit = bind (token integer) (\n -> return (elit n)) in
 
+let chainl1 = \p -> \op ->
+  let rest = \x -> choice (bind op (\f ->
+                           bind p  (\y ->
+                           rest (f x y)))) (return x) in
+  bind p rest in
+
+let chainr1 = \p -> \op ->
+  let rest = \x -> choice (bind op (\f ->
+                           bind (chainr1 p op) (\y ->
+                           return (f x y)))) (return x) in
+  bind p rest in
+
 let expr =
   let parens = bind (symbol "(")(\i1 ->
                bind expr (\e ->
