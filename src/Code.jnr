@@ -184,8 +184,16 @@ let expr =
               bind expr (\e2 ->
               return (elet v e1 e2))))))) in
 
-  let atom = choice (choice (choice (choice lam local) var) lit) parens in
+  let ifThenElse = bind (symbol "if")(\i1 ->
+                   bind expr (\p ->
+                   bind (symbol "then")(\i2 ->
+                   bind expr (\e1 ->
+                   bind (symbol "else")(\i3 ->
+                   bind expr (\e2 ->
+                   return (eIfThenElse p e1 e2))))))) in
+
+  let atom = choice (choice (choice (choice (choice ifThenElse lam) local) var) lit) parens in
 
   foldLeft chainl1 atom (mulOp:(addOp:(cmpOp:((return eapp):empty)))) in
 
-parse expr "let x = ((42 + 5) * 2) in (\\ y -> (x > 100))"
+parse expr "let fac = \\n -> if (n == 0) then 1 else n * (fac (n - 1)) in fac 5"

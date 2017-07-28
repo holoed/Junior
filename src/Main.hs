@@ -20,6 +20,7 @@ data Expr =  EVar String
            | ELam String Expr
            | EApp Expr Expr
            | ELet String Expr Expr
+           | EIfThenElse Expr Expr Expr
            deriving Show
 
 data Result = Value Prim
@@ -116,7 +117,8 @@ predefEnv = fromList [
     ("elit", Function (\(Value x) -> return $ ExpResult (ELit x))),
     ("elet", Function (\(Value (StringVal s)) -> return $ Function (\(ExpResult e1) -> return $ Function (\(ExpResult e2) -> return $ ExpResult (ELet s e1 e2))))),
     ("eapp", Function (\(ExpResult e1) -> return $ Function (\(ExpResult e2) -> return $ ExpResult (EApp e1 e2)))),
-    ("elam", Function (\(Value (StringVal s)) -> return $ Function (\(ExpResult e) -> return $ ExpResult (ELam s e))))
+    ("elam", Function (\(Value (StringVal s)) -> return $ Function (\(ExpResult e) -> return $ ExpResult (ELam s e)))),
+    ("eIfThenElse", Function (\(ExpResult p) -> return $ Function (\(ExpResult e1) -> return $ Function (\(ExpResult e2) -> return $ ExpResult (EIfThenElse p e1 e2)))))
   ]
 
 eval :: Exp -> Result
