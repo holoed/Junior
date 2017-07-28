@@ -153,6 +153,17 @@ let chainr1 = \p -> \op ->
 
 let infixOp = \s -> \x -> \y -> eapp (eapp (evar s) x) y in
 
+let addOp = choice (bind (symbol "+")(\x -> return (infixOp "+")))
+                   (bind (symbol "-")(\x -> return (infixOp "-"))) in
+
+let mulOp = choice (bind (symbol "*")(\x -> return (infixOp "*")))
+                   (bind (symbol "/")(\x -> return (infixOp "/"))) in
+
+let cmpOp = choice (choice (choice (bind (symbol ">")(\x -> return (infixOp ">")))
+                                   (bind (symbol "<")(\x -> return (infixOp "<"))))
+                                   (bind (symbol "==")(\x -> return (infixOp "=="))))
+                                   (bind (symbol "||")(\x -> return (infixOp "||"))) in
+
 let expr =
   let parens = bind (symbol "(")(\i1 ->
                bind expr (\e ->
@@ -166,6 +177,6 @@ let expr =
               bind expr (\e2 ->
               return (elet v e1 e2))))))) in
   let atom = choice (choice (choice local var) lit) parens in
-  atom in
+  foldLeft chainl1 atom (mulOp:(addOp:(cmpOp:((return eapp):empty)))) in
 
-parse expr "let x = (42) in x"
+parse expr "let x = ((42 + 5) * 2) in (x > 100)"
