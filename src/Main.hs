@@ -17,6 +17,7 @@ data Prim = IntVal Int
 
 data Expr =  EVar String
            | ELit Prim
+           | ELam String Expr
            | EApp Expr Expr
            | ELet String Expr Expr
            deriving Show
@@ -114,7 +115,8 @@ predefEnv = fromList [
     ("evar", Function (\(Value (StringVal s)) -> return $ ExpResult (EVar s))),
     ("elit", Function (\(Value x) -> return $ ExpResult (ELit x))),
     ("elet", Function (\(Value (StringVal s)) -> return $ Function (\(ExpResult e1) -> return $ Function (\(ExpResult e2) -> return $ ExpResult (ELet s e1 e2))))),
-    ("eapp", Function (\(ExpResult e1) -> return $ Function (\(ExpResult e2) -> return $ ExpResult (EApp e1 e2))))
+    ("eapp", Function (\(ExpResult e1) -> return $ Function (\(ExpResult e2) -> return $ ExpResult (EApp e1 e2)))),
+    ("elam", Function (\(Value (StringVal s)) -> return $ Function (\(ExpResult e) -> return $ ExpResult (ELam s e))))
   ]
 
 eval :: Exp -> Result
