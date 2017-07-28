@@ -172,8 +172,9 @@ let expr =
 
   let lam   = bind (symbol "\\")(\i1 ->
               bind variable (\s ->
+              bind (symbol "->")(\i2 ->
               bind expr (\e ->
-              return (elam s e)))) in
+              return (elam s e))))) in
 
   let local = bind (symbol "let")(\i1 ->
               bind variable (\v ->
@@ -187,4 +188,4 @@ let expr =
 
   foldLeft chainl1 atom (mulOp:(addOp:(cmpOp:((return eapp):empty)))) in
 
-parse expr "let x = ((42 + 5) * 2) in (x > 100)"
+parse expr "let x = ((42 + 5) * 2) in (\\ y -> (x > 100))"
