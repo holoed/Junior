@@ -6,8 +6,13 @@ import Expr
 import Data.Map hiding (null, map)
 import Data.Char
 
+showValue :: Result -> Result
+showValue (Value (IntVal n)) = Value (StringVal (show n))
+showValue e = Value (StringVal (show e))
+
 predefEnv :: Env
 predefEnv = fromList [
+    ("show", Function (\e -> return $ showValue e)),
     ("==", Function (\(Value x) -> return $ Function (\(Value y) -> return $ Value (BoolVal (eq x y)) ))),
     ("/=", Function (\(Value x) -> return $ Function (\(Value y) -> return $ Value (BoolVal (not (eq x y))) ))),
     ("-", Function (\x -> return $ Function (\y -> return $ Value (sub (valueOf x) (valueOf y)) ))),
@@ -86,6 +91,7 @@ tl (Value (StringVal xs)) = return $ Value $ StringVal (tail xs)
 add :: Prim -> Prim -> Prim
 add (IntVal x) (IntVal y) = IntVal (x + y)
 add (IntVal x) (FloatVal y) = FloatVal (fromIntegral x + y)
+add (StringVal x) (StringVal y) = StringVal (x ++ y)
 
 sub :: Prim -> Prim -> Prim
 sub (IntVal x) (IntVal y) = IntVal (x - y)

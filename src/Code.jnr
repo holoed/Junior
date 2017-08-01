@@ -196,4 +196,23 @@ let expr =
 
   foldLeft chainl1 atom (mulOp:(addOp:(cmpOp:((return eapp):empty)))) in
 
-parse expr "let fac = \\n -> if (n == 0) then 1 else n * (fac (n - 1)) in fac 5"
+let ast = fst (head (parse expr "let fac = \\n -> if (n == 0) then 1 else n * (fac (n - 1)) in fac 5")) in
+
+let cataExp = \e -> \litF -> \varF -> \lamF -> \appF -> \letF -> \ifThenElseF ->
+  let cata = \e ->
+    matchExp e
+      (\x -> litF x)
+      (\s -> varF s)
+      (\s -> \e -> lamF s (cata e))
+      (\e1 -> \e2 -> appF (cata e1) (cata e2))
+      (\s -> \e1 -> \e2 -> letF s (cata e1) (cata e2))
+      (\p -> \e1 -> \e2 -> ifThenElseF (cata p) (cata e1) (cata e2)) in
+  cata e in
+
+cataExp ast
+  (\x -> show x)
+  (\s -> s)
+  (\s -> \e -> "\\" + s + " -> " + e)
+  (\e1 -> \e2 -> e1 + " " + e2)
+  (\s -> \e1 -> \e2 -> "let " + s + " = " + e1 + " in " + e2)
+  (\p -> \e1 -> \e2 -> "if " + p + " then " + e1 + " else " + e2)

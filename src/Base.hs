@@ -14,6 +14,12 @@ data Result = Value Prim
             | ListResult [Result]
             | ExpResult Expr
 
+instance Show Result where
+  show (Value x) = show x
+  show (TupleResult xs)  = show xs
+  show (ListResult xs) = show xs
+  show (ExpResult e) = show e
+
 instance Eq Result where
   (==) (Value x) (Value y) = x == y
   (==) (TupleResult xs) (TupleResult ys) = error "Unexpected tuple"
