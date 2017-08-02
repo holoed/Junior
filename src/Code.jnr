@@ -209,10 +209,12 @@ let cataExp = \e -> \litF -> \varF -> \lamF -> \appF -> \letF -> \ifThenElseF ->
       (\p -> \e1 -> \e2 -> ifThenElseF (cata p) (cata e1) (cata e2)) in
   cata e in
 
+let isOp = \c -> (c == "-") || (c == "==") || (c == "*") in
+
 cataExp ast
   (\x -> show x)
   (\s -> s)
   (\s -> \e -> "\\" + s + " -> " + e)
-  (\e1 -> \e2 -> e1 + " " + e2)
+  (\e1 -> \e2 -> if (isOp e1) then (e2 + " " + e1) else ("(" + e1 + " " + e2 + ")"))
   (\s -> \e1 -> \e2 -> "let " + s + " = " + e1 + " in " + e2)
   (\p -> \e1 -> \e2 -> "if " + p + " then " + e1 + " else " + e2)
