@@ -196,8 +196,6 @@ let expr =
 
   foldLeft chainl1 atom (mulOp:(addOp:(cmpOp:((return eapp):empty)))) in
 
-let ast = fst (head (parse expr "let fac = \\n -> if (n == 0) then 1 else n * (fac (n - 1)) in fac 5")) in
-
 let cataExp = \e -> \litF -> \varF -> \lamF -> \appF -> \letF -> \ifThenElseF ->
   let cata = \e ->
     matchExp e
@@ -209,12 +207,16 @@ let cataExp = \e -> \litF -> \varF -> \lamF -> \appF -> \letF -> \ifThenElseF ->
       (\p -> \e1 -> \e2 -> ifThenElseF (cata p) (cata e1) (cata e2)) in
   cata e in
 
-let isOp = \c -> (c == "-") || (c == "==") || (c == "*") in
+let pretty = \e ->
+  let isOp = \c -> (c == "-") || (c == "==") || (c == "*") in
+  cataExp e
+    (\x -> show x)
+    (\s -> s)
+    (\s -> \e -> "\\" + s + " -> " + e)
+    (\e1 -> \e2 -> if (isOp e1) then (e2 + " " + e1) else ("(" + e1 + " " + e2 + ")"))
+    (\s -> \e1 -> \e2 -> "let " + s + " = " + e1 + " in " + e2)
+    (\p -> \e1 -> \e2 -> "if " + p + " then " + e1 + " else " + e2) in
 
-cataExp ast
-  (\x -> show x)
-  (\s -> s)
-  (\s -> \e -> "\\" + s + " -> " + e)
-  (\e1 -> \e2 -> if (isOp e1) then (e2 + " " + e1) else ("(" + e1 + " " + e2 + ")"))
-  (\s -> \e1 -> \e2 -> "let " + s + " = " + e1 + " in " + e2)
-  (\p -> \e1 -> \e2 -> "if " + p + " then " + e1 + " else " + e2)
+let sample = fst (head (parse expr "let fac = \\n -> if (n == 0) then 1 else n * (fac (n - 1)) in fac 5")) in
+
+pretty sample
