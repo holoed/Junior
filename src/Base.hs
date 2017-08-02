@@ -6,7 +6,7 @@ import Control.Monad.Reader hiding (fix)
 import Expr
 
 type Env = Map String Result
-type EnvReader a = Reader Env a
+type EnvReader a = ReaderT Env IO a 
 
 data Result = Value Prim
             | Function (Result -> EnvReader Result)

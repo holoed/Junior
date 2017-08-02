@@ -19,13 +19,14 @@ interpAlg (App e1 e2) = do { fn <- e1; arg <- e2; applyFn fn arg }
 interpAlg (Let s v b) = do { v' <- v; local (insert s v') b }
 interpAlg (IfThenElse p e1 e2) = do { Value (BoolVal p') <- p; if p' then e1 else e2 }
 
-eval :: Exp -> Result
-eval e = runReader (cataRec interpAlg e) predefEnv
+eval :: Exp -> IO Result
+eval e = runReaderT (cataRec interpAlg e) predefEnv
 
-run :: String -> Result
+run :: String -> IO Result
 run = eval . parse
 
 main :: IO ()
 main = do
   txt <- readFile "Code.jnr"
-  putStrLn $ printResult $ run txt
+  ret <- run txt
+  putStrLn $ printResult $ ret
