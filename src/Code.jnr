@@ -223,7 +223,7 @@ let toJs = \e ->
     (\x -> show x)
     (\s -> s)
     (\s -> \e -> "function (" + s + ") { " + e + " }")
-    (\e1 -> \e2 -> if (isOp e1) then (e2 + " " + e1) else ("(" + e1 + " " + e2 + ")"))
+    (\e1 -> \e2 -> if (isOp e1) then (e2 + " " + e1) else ("(" + e1 + " (" + e2 + "))"))
     (\s -> \e1 -> \e2 -> "var " + s + " = " + e1 + "; " + e2)
     (\p -> \e1 -> \e2 -> "if (" + p + ") { return " + e1 + " } else { return " + e2 + " }") in
 
