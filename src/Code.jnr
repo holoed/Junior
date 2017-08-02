@@ -217,6 +217,16 @@ let pretty = \e ->
     (\s -> \e1 -> \e2 -> "let " + s + " = " + e1 + " in " + e2)
     (\p -> \e1 -> \e2 -> "if " + p + " then " + e1 + " else " + e2) in
 
+let toJs = \e ->
+  let isOp = \c -> (c == "-") || (c == "==") || (c == "*") in
+  cataExp e
+    (\x -> show x)
+    (\s -> s)
+    (\s -> \e -> "function (" + s + ") { " + e + " }")
+    (\e1 -> \e2 -> if (isOp e1) then (e2 + " " + e1) else ("(" + e1 + " " + e2 + ")"))
+    (\s -> \e1 -> \e2 -> "var " + s + " = " + e1 + "; " + e2)
+    (\p -> \e1 -> \e2 -> "if (" + p + ") { return " + e1 + " } else { return " + e2 + " }") in
+
 let sample = fst (head (parse expr "let fac = \\n -> if (n == 0) then 1 else n * (fac (n - 1)) in fac 5")) in
 
-pretty sample
+toJs sample
