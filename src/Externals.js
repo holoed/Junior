@@ -17,10 +17,16 @@ var Nil = {
   }
 };
 
+var nil = Nil;
+
 var cons = function (x) {
   return function (xs) {
-    return new Cons(x, xs)
+    return new Cons(x, xs);
   }
 }
 
-var nil = Nil
+var isEmpty = function (xs) { return xs.isEmpty; }
+
+var head = function (xs) { return xs.head; }
+
+var tail = function (xs) { return xs.tail; }

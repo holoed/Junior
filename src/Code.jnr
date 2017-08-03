@@ -228,4 +228,4 @@ let toJs = \e ->
 
 let sample = fst (head (parse expr (readFile "Sample.jnr"))) in
 
-toJs sample
+"var main = function(){ " + (toJs sample) + "}"

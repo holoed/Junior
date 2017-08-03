@@ -10,4 +10,6 @@ let range = \startIndex -> \endIndex ->
       else range2 (cons endIndex acc) (endIndex - 1) in
     range2 nil endIndex in
 
-range 0 5
+let fac = \n -> foldLeft (\x -> \y -> x * y) 1 (range 1 n) in
+
+fac 5

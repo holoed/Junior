@@ -6,7 +6,7 @@ import Control.Monad.Reader hiding (fix)
 import Expr
 
 type Env = Map String Result
-type EnvReader a = ReaderT Env IO a 
+type EnvReader a = ReaderT Env IO a
 
 data Result = Value Prim
             | Function (Result -> EnvReader Result)
@@ -36,7 +36,7 @@ applyFn (Function f) = f
 applyFn (Value x) = error ("Expected function but got " ++ show x)
 
 printResult :: Result -> String
-printResult (Value (StringVal x)) = show x
+printResult (Value (StringVal x)) = x
 printResult (Value x) = show x
 printResult (ListResult xs) =  show (fmap printResult xs)
 printResult (TupleResult [x, y]) = show (printResult x, printResult y)
