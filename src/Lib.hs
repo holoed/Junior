@@ -21,6 +21,7 @@ readFileEscaped s = do
 
 predefEnv :: Env
 predefEnv = fromList [
+    ("isSpace", Function (\(Value (StringVal s)) -> return $ Value (BoolVal ((isSpace . head) s)))),
     ("readFile", Function (\(Value (StringVal s)) -> lift $ fmap (Value . StringVal) $ readFileEscaped s)),
     ("show", Function (\e -> return $ showValue e)),
     ("==", Function (\(Value x) -> return $ Function (\(Value y) -> return $ Value (BoolVal (eq x y)) ))),

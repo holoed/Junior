@@ -1,1 +1,7 @@
-let fac = \n -> if (n == 0) then 1 else n * (fac (n - 1)) in fac 5
+let compose = \f -> \g -> \x -> f (g x) in
+
+let inc = \x -> x + 1 in
+
+let g = compose inc inc in
+
+g 5

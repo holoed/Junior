@@ -28,8 +28,6 @@ let fmap = \f -> \xs ->
 
 let flatMap = \f -> compose concat (fmap f) in
 
-let isSpace = \ch -> ch == " " in
-
 let isDigit = \ch -> (ch == "0") || (ch == "1") ||
                      (ch == "2") || (ch == "3") ||
                      (ch == "4") || (ch == "5") ||
@@ -218,11 +216,11 @@ let pretty = \e ->
     (\p -> \e1 -> \e2 -> "if " + p + " then " + e1 + " else " + e2) in
 
 let toJs = \e ->
-  let isOp = \c -> (c == "-") || (c == "==") || (c == "*") in
+  let isOp = \c -> (c == "+") || (c == "-") || (c == "==") || (c == "*") in
   cataExp e
     (\x -> show x)
     (\s -> s)
-    (\s -> \e -> "function (" + s + ") { " + e + " }")
+    (\s -> \e -> "function (" + s + ") { return " + e + " }")
     (\e1 -> \e2 -> if (isOp e1) then (e2 + " " + e1) else ("(" + e1 + " (" + e2 + "))"))
     (\s -> \e1 -> \e2 -> "var " + s + " = " + e1 + "; " + e2)
     (\p -> \e1 -> \e2 -> "if (" + p + ") { return " + e1 + " } else { return " + e2 + " }") in
