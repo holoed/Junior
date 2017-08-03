@@ -6,14 +6,22 @@ import Expr
 import Data.Map hiding (null, map)
 import Data.Char
 import Control.Monad.Trans
+import Data.Text (replace, pack, unpack)
+import qualified Data.Text.IO
 
 showValue :: Result -> Result
 showValue (Value (IntVal n)) = Value (StringVal (show n))
 showValue e = Value (StringVal (show e))
 
+readFileEscaped :: String -> IO String
+readFileEscaped s = do
+  txt <- Data.Text.IO.readFile s
+  let escaped = replace (pack "\\") (pack "\\\\") txt
+  return $ unpack escaped
+
 predefEnv :: Env
 predefEnv = fromList [
-    ("readFile", Function (\(Value (StringVal s)) -> lift $ fmap (Value . StringVal) $ readFile s)),
+    ("readFile", Function (\(Value (StringVal s)) -> lift $ fmap (Value . StringVal) $ readFileEscaped s)),
     ("show", Function (\e -> return $ showValue e)),
     ("==", Function (\(Value x) -> return $ Function (\(Value y) -> return $ Value (BoolVal (eq x y)) ))),
     ("/=", Function (\(Value x) -> return $ Function (\(Value y) -> return $ Value (BoolVal (not (eq x y))) ))),
