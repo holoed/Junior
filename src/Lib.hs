@@ -8,6 +8,7 @@ import Data.Char
 import Control.Monad.Trans
 import Data.Text (replace, pack, unpack)
 import qualified Data.Text.IO
+import Data.List (isPrefixOf)
 
 showValue :: Result -> Result
 showValue (Value (IntVal n)) = Value (StringVal (show n))
@@ -21,6 +22,7 @@ readFileEscaped s = do
 
 predefEnv :: Env
 predefEnv = fromList [
+    ("startsWith", Function (\(Value (StringVal s)) -> return $ Function (\(Value (StringVal xs)) -> return $ Value (BoolVal (isPrefixOf s xs))))),
     ("isSpace", Function (\(Value (StringVal s)) -> return $ Value (BoolVal ((isSpace . head) s)))),
     ("readFile", Function (\(Value (StringVal s)) -> lift $ fmap (Value . StringVal) $ readFileEscaped s)),
     ("show", Function (\e -> return $ showValue e)),

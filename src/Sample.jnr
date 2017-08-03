@@ -1,7 +1,13 @@
 let compose = \f -> \g -> \x -> f (g x) in
 
-let inc = \x -> x + 1 in
+let foldLeft = \f -> \v -> \xs ->
+  if (isEmpty xs) then v
+  else foldLeft f (f v (head xs)) (tail xs) in
 
-let g = compose inc inc in
+let range = \startIndex -> \endIndex ->
+    let range2 = \acc -> \endIndex ->
+      if (startIndex > endIndex) then acc
+      else range2 (cons endIndex acc) (endIndex - 1) in
+    range2 nil endIndex in
 
-g 5
+range 0 5
