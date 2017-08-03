@@ -23,6 +23,11 @@ let range = \startIndex -> \endIndex ->
       else range2 (cons endIndex acc) (endIndex - 1) in
     range2 nil endIndex in
 
+let fmap = \f -> \xs ->
+  foldRight (\x -> \acc -> cons (f x) acc) nil xs in
+
 let fac = \n -> foldRight (\x -> \y -> x * y) 1 (range 1 n) in
 
-concat (append (cons (cons (fac 5) nil) nil) (cons (cons (fac 6) nil) nil))
+let xs = concat (append (cons (cons (fac 5) nil) nil) (cons (cons (fac 6) nil) nil)) in
+
+fmap (\x -> x * 2) xs
