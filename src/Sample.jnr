@@ -26,8 +26,10 @@ let range = \startIndex -> \endIndex ->
 let fmap = \f -> \xs ->
   foldRight (\x -> \acc -> cons (f x) acc) nil xs in
 
+let flatMap = \f -> compose concat (fmap f) in
+
 let fac = \n -> foldRight (\x -> \y -> x * y) 1 (range 1 n) in
 
 let xs = concat (append (cons (cons (fac 5) nil) nil) (cons (cons (fac 6) nil) nil)) in
 
-fmap (\x -> x * 2) xs
+flatMap (\x -> cons (x * 2) (cons x nil)) xs
