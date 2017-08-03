@@ -4,12 +4,25 @@ let foldLeft = \f -> \v -> \xs ->
   if (isEmpty xs) then v
   else foldLeft f (f v (head xs)) (tail xs) in
 
+let id = \x -> x in
+
+let foldRight = \f -> \v -> \xs ->
+  foldLeft (\g -> \b -> \x -> g (f b x)) id xs v in
+
+let append = \xs -> \ys ->
+  if (isEmpty xs) then ys
+  else (cons (head xs) (append (tail xs) ys)) in
+
+let concat = \xss ->
+  if (isEmpty xss) then nil
+  else append (head xss) (concat (tail xss)) in
+
 let range = \startIndex -> \endIndex ->
     let range2 = \acc -> \endIndex ->
       if (startIndex > endIndex) then acc
       else range2 (cons endIndex acc) (endIndex - 1) in
     range2 nil endIndex in
 
-let fac = \n -> foldLeft (\x -> \y -> x * y) 1 (range 1 n) in
+let fac = \n -> foldRight (\x -> \y -> x * y) 1 (range 1 n) in
 
-fac 5
+concat (append (cons (cons (fac 5) nil) nil) (cons (cons (fac 6) nil) nil))
