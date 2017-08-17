@@ -130,11 +130,23 @@ float = do m <- int
            n <- nat
            return (read (show m ++ "." ++ show n)) -- TODO: Refactor to more efficient way.
 
+choice :: [Parser a] -> Parser a
+choice = foldr1 (<|>)
+
+noneOf :: String -> Parser Char
+noneOf cs = sat (`notElem` cs)
+
 quotedString :: Parser String
 quotedString = do _ <- string "\""
-                  xs <- many (sat (/= '\"'))
+                  xs <- many chars
                   _ <- string "\""
-                  return $ xs
+                  return xs
+    where chars = escaped <|> noneOf "\\\""
+          escaped = (do _ <- char '\\'
+                        _ <- char '\"'
+                        return '\"') <|> (do _ <- char '\\'
+                                             _ <- char '\\'
+                                             return '\\') 
 
 identifier :: [String] -> Parser String
 identifier ks = do x <- token ident

@@ -27,7 +27,12 @@ run = eval . parse
 
 main :: IO ()
 main = do
+    --  tst <- readFile "testString.jnr"
+    --  print tst
+    --  print (parse tst)
   ext <- readFile "Externals.js"
   txt <- readFile "Code.jnr"
+  --print (parse txt)
   ret <- run txt
+  print ret
   writeFile "bin.js" $ ext ++ (printResult $ ret)
