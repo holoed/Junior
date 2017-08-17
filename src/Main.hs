@@ -32,7 +32,7 @@ main = do
     --  print (parse tst)
   ext <- readFile "Externals.js"
   txt <- readFile "Code.jnr"
-  --print (parse txt)
+  print (parse txt)
   ret <- run txt
   print ret
   writeFile "bin.js" $ ext ++ (printResult $ ret)

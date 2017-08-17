@@ -135,7 +135,12 @@ let variable = identifier ("let":("in":("if":("then":("else":empty))))) in
 
 let var = bind variable (\s -> return (evar s)) in
 
-let lit = bind (token integer) (\n -> return (elit n)) in
+let quotedString = bind (chr "\"")(\x ->
+                   bind (many (sat (\ch -> ch /= "\"")))(\y ->
+                   bind (chr "\"")(\z ->
+                   return y))) in
+
+let lit =  bind (token integer) (\n -> return (elit n)) in
 
 let chainl1 = \p -> \op ->
   let rest = \x -> choice (bind op (\f ->
