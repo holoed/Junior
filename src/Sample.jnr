@@ -76,6 +76,25 @@ let alphanum = choice letter digit in
 
 let word = many letter in
 
+let isSpace = \ch -> (ch == " ") in
+
+let space = bind (sat isSpace)(\x -> unit "") in
+
+let spaces = bind (many space)(\x -> unit "") in
+
+let str = \txt ->
+  let xs = stringToCharList txt in
+  let str2 = \xs ->
+   if (isEmpty xs) then unit empty
+   else let x = head xs in
+        let xs2 = tail xs in
+        bind (chr x) (\a ->
+        bind (str2 xs2) (\b ->
+        unit (cons x xs2))) in
+  bind (str2 xs) (\ys -> unit (charListToString ys)) in
+
+let junk = bind (many space) (\a -> unit "") in
+
 let fac = \n -> foldRight (\x -> \y -> x * y) 1 (range 1 n) in
 
 let xs = concat (append (cons (cons (fac 5) nil) nil) (cons (cons (fac 6) nil) nil)) in
