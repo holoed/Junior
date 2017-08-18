@@ -30,3 +30,9 @@ var isEmpty = function (xs) { return xs.isEmpty; }
 var head = function (xs) { return xs.head; }
 
 var tail = function (xs) { return xs.tail; }
+
+var isLower = function (x) { return x.toLowerCase() == x; }
+
+var isUpper = function (x) { return x.toUpperCase() == x; }
+
+var empty = Nil;

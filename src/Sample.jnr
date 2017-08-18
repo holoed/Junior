@@ -39,7 +39,42 @@ let bind = \m -> \f -> \cs ->
   if (isEmpty xs) then empty
   else let n = head xs in f (fst n) (snd n) in
 
+let unit = \x -> \cs -> (cons (mkTuple2 x cs) empty) in
 
+let fail = \cs -> empty in
+
+let item = \cs ->
+  if (isEmpty cs) then empty
+  else let ch = (head cs) in (cons (mkTuple2 ch (tail cs)) empty) in
+
+let sep = \p -> \q -> bind p (\x ->
+                      bind q (\y ->
+                      unit (mkTuple2 x y))) in
+
+let sat = \p -> bind item (\ch -> if (p ch) then unit ch else fail) in
+
+let chr = \x -> sat (\ch -> ch == x) in
+
+let choice = \p -> \q -> \cs ->
+  let xs = p cs in
+  if (isEmpty xs) then q cs
+  else xs in
+
+let many = \p -> choice (bind p (\x ->
+                         bind (many p) (\xs ->
+                         unit (cons x xs)))) (unit empty) in
+
+let digit = sat isDigit in
+
+let lower = sat isLower in
+
+let upper = sat isUpper in
+
+let letter = choice lower upper in
+
+let alphanum = choice letter digit in
+
+let word = many letter in
 
 let fac = \n -> foldRight (\x -> \y -> x * y) 1 (range 1 n) in
 
