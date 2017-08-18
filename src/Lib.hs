@@ -12,6 +12,7 @@ import Data.List (isPrefixOf)
 
 showValue :: Result -> Result
 showValue (Value (IntVal n)) = Value (StringVal (show n))
+showValue (Value (StringVal s)) = Value (StringVal ("\"" ++ s ++ "\""))
 showValue e = Value (StringVal (show e))
 
 predefEnv :: Env
@@ -46,6 +47,7 @@ predefEnv = fromList [
     ("notElem", Function (\x -> return $ Function (\(ListResult xs) -> return $ Value (BoolVal (notElem x xs))))),
     ("evar", Function (\(Value (StringVal s)) -> return $ ExpResult (EVar s))),
     ("elit", Function (\(Value x) -> return $ ExpResult (ELit x))),
+    ("elitS", Function (\(Value x) -> return $ ExpResult (ELit x))),
     ("elet", Function (\(Value (StringVal s)) -> return $ Function (\(ExpResult e1) -> return $ Function (\(ExpResult e2) -> return $ ExpResult (ELet s e1 e2))))),
     ("eapp", Function (\(ExpResult e1) -> return $ Function (\(ExpResult e2) -> return $ ExpResult (EApp e1 e2)))),
     ("elam", Function (\(Value (StringVal s)) -> return $ Function (\(ExpResult e) -> return $ ExpResult (ELam s e)))),

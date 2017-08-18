@@ -28,8 +28,21 @@ let fmap = \f -> \xs ->
 
 let flatMap = \f -> compose concat (fmap f) in
 
+let isDigit = \ch -> (ch == "0") || (ch == "1") ||
+                     (ch == "2") || (ch == "3") ||
+                     (ch == "4") || (ch == "5") ||
+                     (ch == "6") || (ch == "7") ||
+                     (ch == "8") || (ch == "9") in
+
+let bind = \m -> \f -> \cs ->
+  let xs = m cs in
+  if (isEmpty xs) then empty
+  else let n = head xs in f (fst n) (snd n) in
+
+
+
 let fac = \n -> foldRight (\x -> \y -> x * y) 1 (range 1 n) in
 
 let xs = concat (append (cons (cons (fac 5) nil) nil) (cons (cons (fac 6) nil) nil)) in
 
-flatMap (\x -> cons (x * 2) (cons x nil)) xs
+"Hello World"
