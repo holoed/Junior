@@ -95,8 +95,38 @@ let str = \txt ->
 
 let junk = bind (many space) (\a -> unit "") in
 
-let fac = \n -> foldRight (\x -> \y -> x * y) 1 (range 1 n) in
+let token = \p -> bind p (\x ->
+                  bind junk (\a ->
+                  unit x)) in
 
-let xs = concat (append (cons (cons (fac 5) nil) nil) (cons (cons (fac 6) nil) nil)) in
+let parse = \p -> bind junk (\a -> p) in
 
-"Hello World"
+let symbol = \txt -> token (str txt) in
+
+let ident = bind lower (\x ->
+            bind (many alphanum) (\xs ->
+            unit (charListToString (cons x xs)))) in
+
+let many1 = \p -> bind p (\x ->
+                  bind (many p) (\xs ->
+                  unit (cons x xs))) in
+
+let nat = bind (many1 digit) (\xs -> unit (stringToInt (charListToString xs))) in
+
+let integer =
+  let op = choice (bind (chr "-")(\x -> unit neg)) (unit (\x -> x)) in
+  bind op (\f ->
+  bind nat (\n ->
+  unit (f n))) in
+
+let makeFloat = \m -> \n ->
+  if (m > 0) then m + (n * (1 / (size n)))
+             else m - (n * (1 / (size n))) in
+
+let float =
+  bind integer (\m ->
+  bind (symbol ".")(\x ->
+  bind nat (\n ->
+  unit (makeFloat m n)))) in
+
+parse float (stringToCharList "3.14")

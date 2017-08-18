@@ -36,3 +36,39 @@ var isLower = function (x) { return x.toLowerCase() == x; }
 var isUpper = function (x) { return x.toUpperCase() == x; }
 
 var empty = Nil;
+
+var mkTuple2 = function (x) {
+  return function(y) {
+    return { fst: x, snd: y };
+  };
+};
+
+var fst = function (p) { return p.fst; };
+
+var snd = function (p) { return p.snd; };
+
+var stringToCharList = function (s) {
+   if (s == "") {
+    return empty;
+   } else {
+   return cons (s.charAt(0)) (stringToCharList (s.slice(1)));
+ };
+};
+
+var charListToString = function (xs) {
+   if (isEmpty(xs)) {
+     return "";
+   } else {
+     var x = head(xs);
+     return x + charListToString(tail(xs));
+   }
+};
+
+var stringToInt = function (s) {
+  return parseInt(s);
+};
+
+var size = function (x) {
+  var ret = Math.pow(10, (x.toString().length));
+  return ret;
+};
