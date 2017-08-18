@@ -129,4 +129,11 @@ let float =
   bind nat (\n ->
   unit (makeFloat m n)))) in
 
-parse float (stringToCharList "3.14")
+let identifier = \ks ->
+  bind (token ident)(\x -> if (notElem x ks) then (unit x) else fail) in
+
+let variable = identifier (cons "let" (cons "in" (cons "if" (cons "then" (cons "else" empty))))) in
+
+let vaR = bind variable (\s -> unit (evar s)) in
+
+parse vaR (stringToCharList "xs")

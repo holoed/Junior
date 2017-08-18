@@ -72,3 +72,18 @@ var size = function (x) {
   var ret = Math.pow(10, (x.toString().length));
   return ret;
 };
+
+var notElem = function (x) {
+  return function (ys) {
+    if (x == head(ys)) {
+      return false;
+    } else {
+      var ys2 = tail(ys);
+      return isEmpty(ys2) || notElem(x)(ys2);
+    }
+  };
+};
+
+var evar = function (s) {
+  return { tag: "Var", value: s };
+}
