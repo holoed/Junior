@@ -127,3 +127,60 @@ var elam = function (s) {
     return { tag: "Lam", args: { name: s, body: e } }
   }
 }
+
+var isLit = function (e) {
+  return e.tag == "Lit"
+}
+
+var isVar = function (e) {
+  return e.tag == "Var"
+}
+
+var isLam = function (e) {
+  return e.tag == "Lam"
+}
+
+var isApp = function (e) {
+  return e.tag == "App"
+}
+
+var isLet = function (e) {
+  return e.tag == "Let"
+}
+
+var isIfThenElse = function (e) {
+  return e.tag == "IfThenElse"
+}
+
+var error = function (s) {
+  console.log(s)
+  return null
+}
+
+var extractLet = function (e) {
+  return { fst: { fst: e.args.name, snd: e.args.value }, snd: e.args.body }
+}
+
+var extractLam = function (e) {
+  return { fst: e.args.name, snd: e.args.body }
+}
+
+var extractIfThenElse = function (e) {
+  return { fst: e.args.predExp, snd: { fst: e.args.thenExp, snd: e.args.elseExp } }
+}
+
+var extractApp = function (e) {
+  return { fst: e.args.left, snd: e.args.right }
+}
+
+var extractVar = function (e) {
+  return e.args;
+}
+
+var extractLit = function (e) {
+  return e.args;
+}
+
+var show = function (e) {
+  return e.toString()
+}
