@@ -136,4 +136,6 @@ let variable = identifier (cons "let" (cons "in" (cons "if" (cons "then" (cons "
 
 let vaR = bind variable (\s -> unit (evar s)) in
 
-parse vaR (stringToCharList "xs")
+let noneOf = \cs -> sat (\c -> notElem c cs) in
+
+"Hello \"World\""

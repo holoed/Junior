@@ -12,7 +12,7 @@ import Data.List (isPrefixOf)
 
 showValue :: Result -> Result
 showValue (Value (IntVal n)) = Value (StringVal (show n))
-showValue (Value (StringVal s)) = Value (StringVal ("\"" ++ s ++ "\""))
+showValue (Value (StringVal s)) = Value (StringVal ("'" ++ s ++ "'"))
 showValue e = Value (StringVal (show e))
 
 predefEnv :: Env
