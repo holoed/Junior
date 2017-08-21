@@ -155,4 +155,7 @@ let quotedString = bind (chr "\"")(\x ->
                    bind (chr "\"")(\z ->
                    unit (charListToString xs)))) in
 
-parse quotedString (stringToCharList "\"Hello \\\"World\\\" \"")
+let lit =  choice (bind (token integer) (\n -> unit (elit n)))
+                  (bind (token quotedString) (\s -> unit (elitS s))) in
+
+parse lit (stringToCharList "\"Hello \\\"World\\\" \"")

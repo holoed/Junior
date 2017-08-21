@@ -87,3 +87,7 @@ var notElem = function (x) {
 var evar = function (s) {
   return { tag: "Var", value: s };
 }
+
+var elitS = function (s) {
+  return { tag: "Lit", value: s }
+}
