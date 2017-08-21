@@ -158,4 +158,21 @@ let quotedString = bind (chr "\"")(\x ->
 let lit =  choice (bind (token integer) (\n -> unit (elit n)))
                   (bind (token quotedString) (\s -> unit (elitS s))) in
 
+let chainl1 = \p -> \op ->
+  let rest = \x -> choice (bind op (\f ->
+                           bind p  (\y ->
+                           rest (f x y)))) (unit x) in
+  bind p rest in
+
+let chainr1 = \p -> \op ->
+  let rest = \x -> choice (bind op (\f ->
+                           bind (chainr1 p op) (\y ->
+                           unit (f x y)))) (unit x) in
+  bind p rest in
+
+let infixOp = \s -> \x -> \y -> eapp (eapp (evar s) x) y in
+
+let addOp = choice (bind (symbol "+")(\x -> unit (infixOp "+")))
+                   (bind (symbol "-")(\x -> unit (infixOp "-"))) in
+
 parse lit (stringToCharList "\"Hello \\\"World\\\" \"")
