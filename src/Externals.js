@@ -184,3 +184,9 @@ var extractLit = function (e) {
 var show = function (e) {
   return e.toString()
 }
+
+var startsWith = function (s1) {
+  return function (s2) {
+    return s2.startsWith(s1);
+  }
+}
