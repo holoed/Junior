@@ -175,4 +175,44 @@ let infixOp = \s -> \x -> \y -> eapp (eapp (evar s) x) y in
 let addOp = choice (bind (symbol "+")(\x -> unit (infixOp "+")))
                    (bind (symbol "-")(\x -> unit (infixOp "-"))) in
 
-parse lit (stringToCharList "\"Hello \\\"World\\\" \"")
+let mulOp = choice (bind (symbol "*")(\x -> unit (infixOp "*")))
+                   (bind (symbol "/")(\x -> unit (infixOp "/"))) in
+
+let cmpOp = choice (choice (choice (bind (symbol ">")(\x -> unit (infixOp ">")))
+                                   (bind (symbol "<")(\x -> unit (infixOp "<"))))
+                                   (bind (symbol "==")(\x -> unit (infixOp "=="))))
+                                   (bind (symbol "||")(\x -> unit (infixOp "||"))) in
+
+let expr =
+   let parens = bind (symbol "(")(\i1 ->
+                bind expr (\e ->
+                bind (symbol ")")(\i2 ->
+                unit e))) in
+
+   let lam   = bind (symbol "\\")(\i1 ->
+               bind variable (\s ->
+               bind (symbol "->")(\i2 ->
+               bind expr (\e ->
+               unit (elam s e))))) in
+
+   let local = bind (symbol "let")(\i1 ->
+               bind variable (\v ->
+               bind (symbol "=")(\i2 ->
+               bind expr (\e1 ->
+               bind (symbol "in")(\i3 ->
+               bind expr (\e2 ->
+               unit (elet v e1 e2))))))) in
+
+   let ifThenElse = bind (symbol "if")(\i1 ->
+                    bind expr (\p ->
+                    bind (symbol "then")(\i2 ->
+                    bind expr (\e1 ->
+                    bind (symbol "else")(\i3 ->
+                    bind expr (\e2 ->
+                    unit (eIfThenElse p e1 e2))))))) in
+
+   let atom = choice (choice (choice (choice (choice ifThenElse lam) local) vaR) lit) parens in
+
+   foldLeft chainl1 atom (cons mulOp (cons addOp (cons cmpOp (cons (unit eapp) empty)))) in
+
+parse expr (stringToCharList "let fac = \\n -> if (n == 0) then 1 else n * (fac (n - 1)) in fac 5")

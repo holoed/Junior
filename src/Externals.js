@@ -31,9 +31,13 @@ var head = function (xs) { return xs.head; }
 
 var tail = function (xs) { return xs.tail; }
 
-var isLower = function (x) { return x.toLowerCase() == x; }
+var isLower = function (str) {
+  return str.length === 1 && str.match(/[a-z]/i);
+}
 
-var isUpper = function (x) { return x.toUpperCase() == x; }
+var isUpper = function (str) {
+  return str.length === 1 && str.match(/[A-Z]/i);
+}
 
 var empty = Nil;
 
@@ -85,9 +89,41 @@ var notElem = function (x) {
 };
 
 var evar = function (s) {
-  return { tag: "Var", value: s };
+  return { tag: "Var", args: s };
 }
 
 var elitS = function (s) {
-  return { tag: "Lit", value: s }
+  return { tag: "Lit", args: s }
+}
+
+var elit = function (s) {
+  return { tag: "Lit", args: s }
+}
+
+var eapp = function (e1) {
+  return function (e2) {
+    return { tag: "App", args: { left: e1, right: e2 } }
+  }
+}
+
+var elet = function (s) {
+  return function (e1) {
+    return function (e2) {
+      return { tag: "Let", args: { name: s, value: e1, body: e2  } }
+    }
+  }
+}
+
+var eIfThenElse = function (p) {
+  return function (e1) {
+    return function (e2) {
+      return { tag: "IfThenElse", args: { predExp: p, thenExp: e1, elseExp: e2 } }
+    }
+  }
+}
+
+var elam = function (s) {
+  return function (e) {
+    return { tag: "Lam", args: { name: s, body: e } }
+  }
 }
