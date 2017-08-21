@@ -10,9 +10,14 @@ import Data.Text (replace, pack, unpack)
 import qualified Data.Text.IO
 import Data.List (isPrefixOf)
 
+escape :: String -> String
+escape s = unpack (
+    replace (pack "\"") (pack "\\\"") (replace (pack "\\") (pack "\\\\") (pack s))
+  )
+
 showValue :: Result -> Result
 showValue (Value (IntVal n)) = Value (StringVal (show n))
-showValue (Value (StringVal s)) = Value (StringVal ("'" ++ s ++ "'"))
+showValue (Value (StringVal s)) = Value (StringVal ("\"" ++ escape s ++ "\""))
 showValue e = Value (StringVal (show e))
 
 predefEnv :: Env

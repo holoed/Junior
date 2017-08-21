@@ -138,4 +138,21 @@ let vaR = bind variable (\s -> unit (evar s)) in
 
 let noneOf = \cs -> sat (\c -> notElem c cs) in
 
-"Hello \"World\""
+let escapedQuotes = bind (chr "\\")(\x ->
+                    bind (chr "\"")(\y ->
+                    unit "\"")) in
+
+let escapedBackslash = bind (chr "\\")(\x ->
+                       bind (chr "\\")(\y ->
+                       unit "\\")) in
+
+let escaped = choice escapedQuotes escapedBackslash in
+
+let chars = choice escaped (noneOf (stringToCharList "\\\"")) in
+
+let quotedString = bind (chr "\"")(\x ->
+                   bind (many chars)(\xs ->
+                   bind (chr "\"")(\z ->
+                   unit (charListToString xs)))) in
+
+parse quotedString (stringToCharList "\"Hello \\\"World\\\" \"")
