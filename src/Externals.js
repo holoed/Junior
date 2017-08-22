@@ -1,3 +1,5 @@
+var fs = require('fs')
+
 var Cons = function(head, tail) {
   this.head = head;
   this.tail = tail;
@@ -30,6 +32,10 @@ var isEmpty = function (xs) { return xs.isEmpty; }
 var head = function (xs) { return xs.head; }
 
 var tail = function (xs) { return xs.tail; }
+
+var isSpace = function (ch) {
+  return " \t\n\r\v".indexOf(ch) != -1;
+}
 
 var isLower = function (str) {
   return str.length === 1 && str.match(/[a-z]/i);
@@ -181,12 +187,32 @@ var extractLit = function (e) {
   return e.args;
 }
 
+function addslashes (str) {
+  return (str + '')
+    .replace(/[\\"']/g, '\\$&')
+    .replace(/\u0000/g, '\\0')
+}
+
 var show = function (e) {
-  return e.toString()
+  if (typeof e == "string")
+    return "\"" + addslashes(e) + "\"";
+  else return e.toString();
 }
 
 var startsWith = function (s1) {
   return function (s2) {
     return s2.startsWith(s1);
+  }
+}
+
+var readFile = function (path) {
+  return fs.readFileSync(path, 'UTF8');
+}
+
+var writeFile = function (path) {
+  return function (content) {
+    fs.writeFileSync(path, content)
+    console.log(content)
+    console.log(path + " file saved.")
   }
 }
