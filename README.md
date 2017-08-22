@@ -2,7 +2,7 @@
 
 Very Simple Functional Language
 
-To build from Source type this commands at the prompt:
+To build from Source type these commands at the prompt:
 
 1)  cd src              <-- Source Directory
 2)  ghci                <-- Haskell GHC Repl
