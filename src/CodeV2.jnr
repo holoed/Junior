@@ -269,4 +269,6 @@ let txt = readFile "CodeV3.jnr" in
 
 let sample = fst (head (parse expr (stringToCharList txt))) in
 
-writeFile "bin2.js" ("var main = function(){ " + (toJs sample) + "}")
+let externals = readFile "Externals.js" in
+
+writeFile "bin2.js" (externals + "; var main = function(inputFilePath){ " + (toJs sample) + "}")

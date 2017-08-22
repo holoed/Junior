@@ -216,3 +216,7 @@ var writeFile = function (path) {
     console.log(path + " file saved.")
   }
 }
+
+var replaceExtensionToJs = function (s) {
+  return s.substr(0, s.lastIndexOf(".")) + ".js";
+}
