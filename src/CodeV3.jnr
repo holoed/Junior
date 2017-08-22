@@ -271,4 +271,4 @@ let sample = fst (head (parse expr (stringToCharList txt))) in
 
 let externals = readFile "Externals.js" in
 
-writeFile (replaceExtensionToJs inputFilePath) (externals + "; var main = function(){ " + (toJs sample) + "}")
+writeFile (replaceExtensionToJs inputFilePath) (externals + "; exports.main = function(inputFilePath){ " + (toJs sample) + "}")
