@@ -2,9 +2,9 @@ module Main where
 
 import Data.Map hiding (null, map)
 import Control.Monad.Reader hiding (fix)
-import Experiments.RecursionSchemes
-import Experiments.Ast
-import Experiments.Parser hiding (local)
+import RecursionSchemes
+import Ast
+import Parser hiding (local)
 import Primitives
 import Base
 import Lib

@@ -1,6 +1,6 @@
 {-# LANGUAGE UndecidableInstances #-}
 
-module Experiments.RecursionSchemes where
+module RecursionSchemes where
 
 fix :: ((a -> b) -> a -> b) -> a -> b
 fix f = f (fix f)

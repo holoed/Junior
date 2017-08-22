@@ -1,7 +1,7 @@
 {-# LANGUAGE InstanceSigs #-}
 {-# OPTIONS_GHC -fno-warn-unused-do-bind  #-}
 
-module Experiments.BaseParsers where
+module BaseParsers where
 
 import Prelude hiding (seq)
 import Data.Char
@@ -146,7 +146,7 @@ quotedString = do _ <- string "\""
                         _ <- char '\"'
                         return '\"') <|> (do _ <- char '\\'
                                              _ <- char '\\'
-                                             return '\\') 
+                                             return '\\')
 
 identifier :: [String] -> Parser String
 identifier ks = do x <- token ident

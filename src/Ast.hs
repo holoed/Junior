@@ -1,7 +1,7 @@
 {-# LANGUAGE DeriveFunctor #-}
-module Experiments.Ast where
+module Ast where
 
-import Experiments.RecursionSchemes
+import RecursionSchemes
 
 data Literal = IntLit Int | StringLit String | UnitLit deriving Show
 
