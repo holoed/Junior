@@ -1,4 +1,3 @@
-{-# LANGUAGE InstanceSigs #-}
 {-# OPTIONS_GHC -fno-warn-unused-do-bind  #-}
 
 module BaseParsers where
