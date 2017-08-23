@@ -18,6 +18,6 @@ To build from Source type these commands at the prompt:
 
 To compile and run a sample:
 
-1) /jnr.sh jnr/Sample.jnr js/Sample.js             
+1) ./jnr.sh jnr/Sample.jnr js/Sample.js             
 3) node                           <-- Run NodeJS
-4) require("js/Sample.js").main()  <-- Executes the binary in the NodeJS Repl and returns 120 (factorial of 5)
+4) require("./js/Sample.js").main()  <-- Executes the binary in the NodeJS Repl and returns 120 (factorial of 5)
