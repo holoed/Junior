@@ -265,10 +265,10 @@ let toJs = \e ->
        + (if ((startsWith "if" e2) || (startsWith "var" e2)) then "; " else "; return ") + e2)
     (\p -> \e1 -> \e2 -> "function() { if (" + p + ") { " + (if ((startsWith "if" e1) || (startsWith "var" e1)) then e1 else ("return " + e1))  + " } else { " + (if ((startsWith "if" e2) || (startsWith "var" e2)) then e2 else ("return " + e2)) + " } }()") in
 
-let txt = readFile "CodeV3.jnr" in
+let txt = readFile (fst progArgs) in
 
 let sample = fst (head (parse expr (stringToCharList txt))) in
 
-let externals = readFile "Externals.js" in
+let externals = readFile "js/Externals.js" in
 
-writeFile "bin2.js" (externals + "; var main = function(inputFilePath){ " + (toJs sample) + "}")
+writeFile (replaceExtensionToJs (snd progArgs)) (externals + "; exports.main = function(progArgs){ " + (toJs sample) + "}")

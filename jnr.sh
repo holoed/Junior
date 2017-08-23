@@ -1,3 +1,2 @@
 #!/bin/bash
-cd src
-node ./CompileHelper.js $1
+node js/CompileHelper.js $1 $2
