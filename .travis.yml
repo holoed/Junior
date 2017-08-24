@@ -6,3 +6,4 @@ before_script:
 - cabal build
 script:
 - cabal test --show-details=always --test-options="--color"
+- cabal run Junior
