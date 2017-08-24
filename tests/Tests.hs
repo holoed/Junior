@@ -1,6 +1,7 @@
 module Main where
 
 import Base
+import Primitives
 import Parser (parse)
 import Interpreter (eval)
 import Test.Hspec
@@ -9,11 +10,13 @@ run :: String -> IO Result
 run = eval . parse
 
 main :: IO ()
-main = do txt <- readFile "jnr/Code.jnr"
+main = do ext <- readFile "js/Externals.js"
+          codeTxt <- readFile "jnr/Code.jnr"
+          expected <- readFile "js/CodeV2.js"
           hspec $ do
-            describe "fake tests" $ do
-              it "what is the answer to life the universe and everything" $ do
-                print (parse txt)
-                ret <- run txt
-                print ret
-                42 `shouldBe` 42
+            describe "Junior Interpreter Tests" $ do
+              it "Should parse and interpret Code.jnr and produce the right javascript" $ do
+                print (parse codeTxt)
+                Value (StringVal actual) <- run codeTxt
+                print actual
+                (ext ++ actual) `shouldBe` expected
