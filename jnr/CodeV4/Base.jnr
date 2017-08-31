@@ -26,4 +26,6 @@ let range = \startIndex -> \endIndex ->
 let fmap = \f -> \xs ->
   foldRight (\x -> \acc -> cons (f x) acc) nil xs in
 
-let flatMap = \f -> compose concat (fmap f) 
+let flatMap = \f -> compose concat (fmap f) in
+
+()
