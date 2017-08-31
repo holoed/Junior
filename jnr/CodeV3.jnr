@@ -76,9 +76,9 @@ let alphanum = choice letter digit in
 
 let word = many letter in
 
-let space = bind (sat isSpace)(\x -> unit "") in
+let space = bind (sat isSpace)(\x -> unit ()) in
 
-let spaces = bind (many space)(\x -> unit "") in
+let spaces = bind (many space)(\x -> unit ()) in
 
 let str = \txt ->
   let xs = stringToCharList txt in
@@ -91,7 +91,7 @@ let str = \txt ->
         unit (cons x xs2))) in
   bind (str2 xs) (\ys -> unit (charListToString ys)) in
 
-let junk = bind (many space) (\a -> unit "") in
+let junk = bind (many space) (\a -> unit ()) in
 
 let token = \p -> bind p (\x ->
                   bind junk (\a ->
@@ -153,8 +153,9 @@ let quotedString = bind (chr "\"")(\x ->
                    bind (chr "\"")(\z ->
                    unit (charListToString xs)))) in
 
-let lit =  choice (bind (token integer) (\n -> unit (elit n)))
-                  (bind (token quotedString) (\s -> unit (elitS s))) in
+let lit =  choice (choice (bind (token integer) (\n -> unit (elit n)))
+                          (bind (token quotedString) (\s -> unit (elitS s))))
+                  (bind (symbol "()") (\x -> unit elitVoid)) in
 
 let chainl1 = \p -> \op ->
   let rest = \x -> choice (bind op (\f ->
