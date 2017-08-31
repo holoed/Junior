@@ -1,0 +1,7 @@
+let txt = readFile (fst progArgs) in
+
+let sample = fst (head (parse expr (stringToCharList txt))) in
+
+let externals = readFile "js/Externals.js" in
+
+writeFile (replaceExtensionToJs (snd progArgs)) (externals + "; exports.main = function(progArgs){ " + (toJs sample) + "}")

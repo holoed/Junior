@@ -1,0 +1,184 @@
+let isDigit = \ch -> (ch == "0") || (ch == "1") ||
+                     (ch == "2") || (ch == "3") ||
+                     (ch == "4") || (ch == "5") ||
+                     (ch == "6") || (ch == "7") ||
+                     (ch == "8") || (ch == "9") in
+
+let bind = \m -> \f -> \cs ->
+  let xs = m cs in
+  if (isEmpty xs) then empty
+  else let n = head xs in f (fst n) (snd n) in
+
+let unit = \x -> \cs -> (cons (mkTuple2 x cs) empty) in
+
+let fail = \cs -> empty in
+
+let item = \cs ->
+  if (isEmpty cs) then empty
+  else let ch = (head cs) in (cons (mkTuple2 ch (tail cs)) empty) in
+
+let sep = \p -> \q -> bind p (\x ->
+                      bind q (\y ->
+                      unit (mkTuple2 x y))) in
+
+let sat = \p -> bind item (\ch -> if (p ch) then unit ch else fail) in
+
+let chr = \x -> sat (\ch -> ch == x) in
+
+let choice = \p -> \q -> \cs ->
+  let xs = p cs in
+  if (isEmpty xs) then q cs
+  else xs in
+
+let many = \p -> choice (bind p (\x ->
+                         bind (many p) (\xs ->
+                         unit (cons x xs)))) (unit empty) in
+
+let digit = sat isDigit in
+
+let lower = sat isLower in
+
+let upper = sat isUpper in
+
+let letter = choice lower upper in
+
+let alphanum = choice letter digit in
+
+let word = many letter in
+
+let space = bind (sat isSpace)(\x -> unit "") in
+
+let spaces = bind (many space)(\x -> unit "") in
+
+let str = \txt ->
+  let xs = stringToCharList txt in
+  let str2 = \xs ->
+   if (isEmpty xs) then unit empty
+   else let x = head xs in
+        let xs2 = tail xs in
+        bind (chr x) (\a ->
+        bind (str2 xs2) (\b ->
+        unit (cons x xs2))) in
+  bind (str2 xs) (\ys -> unit (charListToString ys)) in
+
+let junk = bind (many space) (\a -> unit "") in
+
+let token = \p -> bind p (\x ->
+                  bind junk (\a ->
+                  unit x)) in
+
+let parse = \p -> bind junk (\a -> p) in
+
+let symbol = \txt -> token (str txt) in
+
+let ident = bind lower (\x ->
+            bind (many alphanum) (\xs ->
+            unit (charListToString (cons x xs)))) in
+
+let many1 = \p -> bind p (\x ->
+                  bind (many p) (\xs ->
+                  unit (cons x xs))) in
+
+let nat = bind (many1 digit) (\xs -> unit (stringToInt (charListToString xs))) in
+
+let integer =
+  let op = choice (bind (chr "-")(\x -> unit neg)) (unit (\x -> x)) in
+  bind op (\f ->
+  bind nat (\n ->
+  unit (f n))) in
+
+let makeFloat = \m -> \n ->
+  if (m > 0) then m + (n * (1 / (size n)))
+             else m - (n * (1 / (size n))) in
+
+let float =
+  bind integer (\m ->
+  bind (symbol ".")(\x ->
+  bind nat (\n ->
+  unit (makeFloat m n)))) in
+
+let identifier = \ks ->
+  bind (token ident)(\x -> if (notElem x ks) then (unit x) else fail) in
+
+let variable = identifier (cons "let" (cons "in" (cons "if" (cons "then" (cons "else" empty))))) in
+
+let vaR = bind variable (\s -> unit (evar s)) in
+
+let noneOf = \cs -> sat (\c -> notElem c cs) in
+
+let escapedQuotes = bind (chr "\\")(\x ->
+                    bind (chr "\"")(\y ->
+                    unit "\"")) in
+
+let escapedBackslash = bind (chr "\\")(\x ->
+                       bind (chr "\\")(\y ->
+                       unit "\\")) in
+
+let escaped = choice escapedQuotes escapedBackslash in
+
+let chars = choice escaped (noneOf (stringToCharList "\\\"")) in
+
+let quotedString = bind (chr "\"")(\x ->
+                   bind (many chars)(\xs ->
+                   bind (chr "\"")(\z ->
+                   unit (charListToString xs)))) in
+
+let lit =  choice (bind (token integer) (\n -> unit (elit n)))
+                  (bind (token quotedString) (\s -> unit (elitS s))) in
+
+let chainl1 = \p -> \op ->
+  let rest = \x -> choice (bind op (\f ->
+                           bind p  (\y ->
+                           rest (f x y)))) (unit x) in
+  bind p rest in
+
+let chainr1 = \p -> \op ->
+  let rest = \x -> choice (bind op (\f ->
+                           bind (chainr1 p op) (\y ->
+                           unit (f x y)))) (unit x) in
+  bind p rest in
+
+let infixOp = \s -> \x -> \y -> eapp (eapp (evar s) x) y in
+
+let addOp = choice (bind (symbol "+")(\x -> unit (infixOp "+")))
+                   (bind (symbol "-")(\x -> unit (infixOp "-"))) in
+
+let mulOp = choice (bind (symbol "*")(\x -> unit (infixOp "*")))
+                   (bind (symbol "/")(\x -> unit (infixOp "/"))) in
+
+let cmpOp = choice (choice (choice (bind (symbol ">")(\x -> unit (infixOp ">")))
+                                   (bind (symbol "<")(\x -> unit (infixOp "<"))))
+                                   (bind (symbol "==")(\x -> unit (infixOp "=="))))
+                                   (bind (symbol "||")(\x -> unit (infixOp "||"))) in
+
+let expr =
+   let parens = bind (symbol "(")(\i1 ->
+                bind expr (\e ->
+                bind (symbol ")")(\i2 ->
+                unit e))) in
+
+   let lam   = bind (symbol "\\")(\i1 ->
+               bind variable (\s ->
+               bind (symbol "->")(\i2 ->
+               bind expr (\e ->
+               unit (elam s e))))) in
+
+   let local = bind (symbol "let")(\i1 ->
+               bind variable (\v ->
+               bind (symbol "=")(\i2 ->
+               bind expr (\e1 ->
+               bind (symbol "in")(\i3 ->
+               bind expr (\e2 ->
+               unit (elet v e1 e2))))))) in
+
+   let ifThenElse = bind (symbol "if")(\i1 ->
+                    bind expr (\p ->
+                    bind (symbol "then")(\i2 ->
+                    bind expr (\e1 ->
+                    bind (symbol "else")(\i3 ->
+                    bind expr (\e2 ->
+                    unit (eIfThenElse p e1 e2))))))) in
+
+   let atom = choice (choice (choice (choice (choice ifThenElse lam) local) vaR) lit) parens in
+
+   foldLeft chainl1 atom (cons mulOp (cons addOp (cons cmpOp (cons (unit eapp) empty))))

@@ -1,0 +1,51 @@
+let cataExp = \e -> \litF -> \varF -> \lamF -> \appF -> \letF -> \ifThenElseF ->
+  let cata = \e ->
+    if (isLit e) then litF (extractLit e)
+    else if (isVar e) then varF (extractVar e)
+    else if (isLam e) then
+      let pair = extractLam e in
+      let n = fst pair in
+      let b = snd pair in
+      lamF n (cata b)
+    else if (isApp e) then
+      let pair = extractApp e in
+      let e1 = fst pair in
+      let e2 = snd pair in
+      appF (cata e1) (cata e2)
+    else if (isLet e) then
+      let args = extractLet e in
+      let n = fst (fst args) in
+      let v = snd (fst args) in
+      let b = snd args in
+      letF n (cata v) (cata b)
+    else if (isIfThenElse e) then
+      let args = extractIfThenElse e in
+      let p = fst args in
+      let t = fst (snd args) in
+      let h = snd (snd args) in
+      ifThenElseF (cata p) (cata t) (cata h)
+    else (error "This should not happen") in
+  cata e in
+
+let pretty = \e ->
+  let isOp = \c -> (c == "-") || (c == "==") || (c == "*") in
+  cataExp e
+    (\x -> show x)
+    (\s -> s)
+    (\s -> \e -> "\\" + s + " -> " + e)
+    (\e1 -> \e2 -> if (isOp e1) then (e2 + " " + e1) else ("(" + e1 + " " + e2 + ")"))
+    (\s -> \e1 -> \e2 -> "let " + s + " = " + e1 + " in " + e2)
+    (\p -> \e1 -> \e2 -> "if " + p + " then " + e1 + " else " + e2) in
+
+let toJs = \e ->
+  let isOp = \c -> (c == "+") || (c == "*") || (c == "==") || (c == "||") || (c == "&&") ||
+                   (c == "-") || (c == "/") || (c == ">") || (c == "<") in
+  cataExp e
+    (\x -> show x)
+    (\s -> s)
+    (\s -> \e -> "function (" + s + ") { " + (if ((startsWith "if" e) || (startsWith "var" e)) then "" else " return ") + e + " }")
+    (\e1 -> \e2 -> if (isOp e1) then (e2 + " " + e1) else ("(" + e1 + " (" + e2 + "))"))
+    (\s -> \e1 -> \e2 -> "var " + s + " = "
+       + (if (startsWith "var" e1) then "function () { " + e1 + " }();" else e1)
+       + (if ((startsWith "if" e2) || (startsWith "var" e2)) then "; " else "; return ") + e2)
+    (\p -> \e1 -> \e2 -> "function() { if (" + p + ") { " + (if ((startsWith "if" e1) || (startsWith "var" e1)) then e1 else ("return " + e1))  + " } else { " + (if ((startsWith "if" e2) || (startsWith "var" e2)) then e2 else ("return " + e2)) + " } }()") in
