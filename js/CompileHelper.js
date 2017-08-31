@@ -1,4 +1,4 @@
-var compiler = require('./CodeV7.js')
+var compiler = require('./CodeV8.js')
 
 var args = process.argv.slice(2)
 
