@@ -106,6 +106,8 @@ var elit = function (s) {
   return { tag: "Lit", args: s }
 }
 
+var elitVoid = { tag: "Lit", args: "()" }
+
 var eapp = function (e1) {
   return function (e2) {
     return { tag: "App", args: { left: e1, right: e2 } }
