@@ -114,6 +114,12 @@ var eimport = function (s) {
   }
 }
 
+var eprog = function (is) {
+  return function (e) {
+    return { imports: is, expr: e }
+  }
+}
+
 var eapp = function (e1) {
   return function (e2) {
     return { tag: "App", args: { left: e1, right: e2 } }
