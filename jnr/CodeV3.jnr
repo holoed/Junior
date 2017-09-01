@@ -130,6 +130,13 @@ let float =
 let identifier = \ks ->
   bind (token ident)(\x -> if (notElem x ks) then (unit x) else fail) in
 
+let sepBy1 = \p -> \sep ->
+        bind p (\x ->
+        bind (many (bind sep (\i1 -> p))) (\xs ->
+        unit (cons x xs))) in
+
+let sepBy = \p -> \sep -> choice (sepBy1 p sep) (unit empty) in
+
 let variable = identifier (cons "let" (cons "in" (cons "if" (cons "then" (cons "else" empty))))) in
 
 let vaR = bind variable (\s -> unit (evar s)) in
@@ -213,6 +220,21 @@ let expr =
    let atom = choice (choice (choice (choice (choice ifThenElse lam) local) vaR) lit) parens in
 
    foldLeft chainl1 atom (cons mulOp (cons addOp (cons cmpOp (cons (unit eapp) empty)))) in
+
+let packageNameP = token (bind upper (\x ->
+                          bind (many alphanum) (\xs ->
+                          unit (charListToString (cons x xs))))) in
+
+let importP = bind (symbol "import")(\i1 ->
+              bind (packageNameP)(\name ->
+              bind (symbol "(")(\i2 ->
+              bind (sepBy variable (symbol ","))(\xs ->
+              bind (symbol ")")(\i3 ->
+              unit (eimport name xs)))))) in
+
+let prog = bind (many importP)(\is ->
+           bind (expr)(\e ->
+           unit (eprog is e))) in
 
 let cataExp = \e -> \litF -> \varF -> \lamF -> \appF -> \letF -> \ifThenElseF ->
   let cata = \e ->
