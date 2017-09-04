@@ -1,0 +1,1 @@
+;; var fac = function (n) {  return function() { if ((n == (0))) { return 1 } else { return (n * ((fac ((n - (1)))))) } }() }; exports.fac = fac; 
