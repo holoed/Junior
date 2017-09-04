@@ -201,6 +201,10 @@ var extractLit = function (e) {
   return e.args;
 }
 
+var extractProg = function (prog) {
+  return { fst: prog.imports, snd: prog.expr };
+}
+
 function addslashes (str) {
   return (str + '')
     .replace(/[\\"']/g, '\\$&')
