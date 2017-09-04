@@ -1,4 +1,4 @@
-var compiler = require('./CodeV5/Main.js')
+var compiler = require('./CodeV4/Main.js')
 
 var args = process.argv.slice(2)
 
