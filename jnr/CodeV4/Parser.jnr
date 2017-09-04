@@ -4,12 +4,7 @@ import Externals (cons, isEmpty, head, tail,
                   stringToCharList, charListToString,
                   stringToInt, size, notElem, evar,
                   elitS, elit, elitVoid, eimport, eprog,
-                  eapp, elet, eIfThenElse, elam, isLit,
-                  isVar, isLam, isApp, isLet, isIfThenElse,
-                  error, extractLet, extractLam, extractIfThenElse,
-                  extractApp, extractVar, extractLit, extractProg,
-                  extractImport, show, startsWith, readFile,
-                  writeFile, replaceExtensionToJs)
+                  eapp, elet, eIfThenElse, elam)
 
 import Base (compose, foldLeft, id, foldRight, append,
              concat, range, fmap, flatMap)

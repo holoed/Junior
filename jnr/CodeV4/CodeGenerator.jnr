@@ -1,18 +1,10 @@
-import Externals (cons, isEmpty, head, tail,
-                  isSpace, isLower, isUpper,
-                  empty, mkTuple2, fst, snd,
-                  stringToCharList, charListToString,
-                  stringToInt, size, notElem, evar,
-                  elitS, elit, elitVoid, eimport, eprog,
-                  eapp, elet, eIfThenElse, elam, isLit,
-                  isVar, isLam, isApp, isLet, isIfThenElse,
+import Externals (head, tail, fst, snd,
+                  isLit, isVar, isLam, isApp, isLet, isIfThenElse,
                   error, extractLet, extractLam, extractIfThenElse,
                   extractApp, extractVar, extractLit, extractProg,
-                  extractImport, show, startsWith, readFile,
-                  writeFile, replaceExtensionToJs)
+                  extractImport, show, startsWith)
 
-import Base (compose, foldLeft, id, foldRight, append,
-             concat, range, fmap, flatMap)
+import Base (foldLeft)
 
 let cataExp = \e -> \litF -> \varF -> \lamF -> \appF -> \letF -> \ifThenElseF ->
   let cata = \e ->
