@@ -1,3 +1,19 @@
+import Externals (cons, isEmpty, head, tail,
+                  isSpace, isLower, isUpper,
+                  empty, mkTuple2, fst, snd,
+                  stringToCharList, charListToString,
+                  stringToInt, size, notElem, evar,
+                  elitS, elit, elitVoid, eimport, eprog,
+                  eapp, elet, eIfThenElse, elam, isLit,
+                  isVar, isLam, isApp, isLet, isIfThenElse,
+                  error, extractLet, extractLam, extractIfThenElse,
+                  extractApp, extractVar, extractLit, extractProg,
+                  extractImport, show, startsWith, readFile,
+                  writeFile, replaceExtensionToJs)
+
+import Base (compose, foldLeft, id, foldRight, append,
+             concat, range, fmap, flatMap)
+
 let isDigit = \ch -> (ch == "0") || (ch == "1") ||
                      (ch == "2") || (ch == "3") ||
                      (ch == "4") || (ch == "5") ||
@@ -46,9 +62,9 @@ let alphanum = choice letter digit in
 
 let word = many letter in
 
-let space = bind (sat isSpace)(\x -> unit "") in
+let space = bind (sat isSpace)(\x -> unit ()) in
 
-let spaces = bind (many space)(\x -> unit "") in
+let spaces = bind (many space)(\x -> unit ()) in
 
 let str = \txt ->
   let xs = stringToCharList txt in
@@ -61,7 +77,7 @@ let str = \txt ->
         unit (cons x xs2))) in
   bind (str2 xs) (\ys -> unit (charListToString ys)) in
 
-let junk = bind (many space) (\a -> unit "") in
+let junk = bind (many space) (\a -> unit ()) in
 
 let token = \p -> bind p (\x ->
                   bind junk (\a ->
@@ -100,6 +116,13 @@ let float =
 let identifier = \ks ->
   bind (token ident)(\x -> if (notElem x ks) then (unit x) else fail) in
 
+let sepBy1 = \p -> \sep ->
+        bind p (\x ->
+        bind (many (bind sep (\i1 -> p))) (\xs ->
+        unit (cons x xs))) in
+
+let sepBy = \p -> \sep -> choice (sepBy1 p sep) (unit empty) in
+
 let variable = identifier (cons "let" (cons "in" (cons "if" (cons "then" (cons "else" empty))))) in
 
 let vaR = bind variable (\s -> unit (evar s)) in
@@ -123,8 +146,9 @@ let quotedString = bind (chr "\"")(\x ->
                    bind (chr "\"")(\z ->
                    unit (charListToString xs)))) in
 
-let lit =  choice (bind (token integer) (\n -> unit (elit n)))
-                  (bind (token quotedString) (\s -> unit (elitS s))) in
+let lit =  choice (choice (bind (token integer) (\n -> unit (elit n)))
+                          (bind (token quotedString) (\s -> unit (elitS s))))
+                  (bind (symbol "()") (\x -> unit elitVoid)) in
 
 let chainl1 = \p -> \op ->
   let rest = \x -> choice (bind op (\f ->
@@ -181,4 +205,21 @@ let expr =
 
    let atom = choice (choice (choice (choice (choice ifThenElse lam) local) vaR) lit) parens in
 
-   foldLeft chainl1 atom (cons mulOp (cons addOp (cons cmpOp (cons (unit eapp) empty))))
+   foldLeft chainl1 atom (cons mulOp (cons addOp (cons cmpOp (cons (unit eapp) empty)))) in
+
+let packageNameP = token (bind upper (\x ->
+                          bind (many alphanum) (\xs ->
+                          unit (charListToString (cons x xs))))) in
+
+let importP = bind (symbol "import")(\i1 ->
+              bind (packageNameP)(\name ->
+              bind (symbol "(")(\i2 ->
+              bind (sepBy variable (symbol ","))(\xs ->
+              bind (symbol ")")(\i3 ->
+              unit (eimport name xs)))))) in
+
+let progP = bind (many importP)(\is ->
+            bind (expr)(\e ->
+            unit (eprog is e))) in
+
+()

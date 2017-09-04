@@ -1,7 +1,22 @@
-let txt = readFile (fst progArgs) in
+import Externals (cons, isEmpty, head, tail,
+                  isSpace, isLower, isUpper,
+                  empty, mkTuple2, fst, snd,
+                  stringToCharList, charListToString,
+                  stringToInt, size, notElem, evar,
+                  elitS, elit, elitVoid, eimport, eprog,
+                  eapp, elet, eIfThenElse, elam, isLit,
+                  isVar, isLam, isApp, isLet, isIfThenElse,
+                  error, extractLet, extractLam, extractIfThenElse,
+                  extractApp, extractVar, extractLit, extractProg,
+                  extractImport, show, startsWith, readFile,
+                  writeFile, replaceExtensionToJs)
 
-let sample = fst (head (parse expr (stringToCharList txt))) in
+import Parser (parse, progP)
+import CodeGenerator (toJs)
 
-let externals = readFile "js/Externals.js" in
+let main = \progArgs ->
+  let txt = readFile (fst progArgs) in
+  let progAst = fst (head (parse progP (stringToCharList txt))) in
+  writeFile (replaceExtensionToJs (snd progArgs)) (toJs progAst) in
 
-writeFile (replaceExtensionToJs (snd progArgs)) (externals + "; exports.main = function(progArgs){ " + (toJs sample) + "}")
+()

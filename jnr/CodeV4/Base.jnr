@@ -1,3 +1,5 @@
+import Externals (cons, isEmpty, head, tail, nil)
+
 let compose = \f -> \g -> \x -> f (g x) in
 
 let foldLeft = \f -> \v -> \xs ->
