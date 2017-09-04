@@ -205,6 +205,10 @@ var extractProg = function (prog) {
   return { fst: prog.imports, snd: prog.expr };
 }
 
+var extractImport = function (i) {
+  return { fst: i.packageName, snd: i.funcs };
+}
+
 function addslashes (str) {
   return (str + '')
     .replace(/[\\"']/g, '\\$&')
@@ -238,3 +242,50 @@ var writeFile = function (path) {
 var replaceExtensionToJs = function (s) {
   return s.substr(0, s.lastIndexOf(".")) + ".js";
 }
+
+exports.cons = cons;
+exports.isEmpty = isEmpty;
+exports.head = head;
+exports.tail = tail;
+exports.isSpace = isSpace;
+exports.isLower = isLower;
+exports.isUpper = isUpper;
+exports.empty = empty;
+exports.mkTuple2 = mkTuple2;
+exports.fst = fst;
+exports.snd = snd;
+exports.stringToCharList = stringToCharList;
+exports.charListToString = charListToString;
+exports.stringToInt = stringToInt;
+exports.size = size;
+exports.notElem = notElem;
+exports.evar = evar;
+exports.elitS = elitS;
+exports.elit = elit;
+exports.elitVoid = elitVoid;
+exports.eimport = eimport;
+exports.eprog = eprog;
+exports.eapp = eapp;
+exports.elet = elet;
+exports.eIfThenElse = eIfThenElse;
+exports.elam = elam;
+exports.isLit = isLit;
+exports.isVar = isVar;
+exports.isLam = isLam;
+exports.isApp = isApp;
+exports.isLet = isLet;
+exports.isIfThenElse = isIfThenElse;
+exports.error = error;
+exports.extractLet = extractLet;
+exports.extractLam = extractLam;
+exports.extractIfThenElse = extractIfThenElse;
+exports.extractApp = extractApp;
+exports.extractVar = extractVar;
+exports.extractLit = extractLit;
+exports.extractProg = extractProg;
+exports.extractImport = extractImport;
+exports.show = show;
+exports.startsWith = startsWith;
+exports.readFile = readFile;
+exports.writeFile = writeFile;
+exports.replaceExtensionToJs = replaceExtensionToJs;

@@ -1,4 +1,15 @@
-import Base (compose)
+import Externals (cons, isEmpty, head, tail,
+                  isSpace, isLower, isUpper,
+                  empty, mkTuple2, fst, snd,
+                  stringToCharList, charListToString,
+                  stringToInt, size, notElem, evar,
+                  elitS, elit, elitVoid, eimport, eprog,
+                  eapp, elet, eIfThenElse, elam, isLit,
+                  isVar, isLam, isApp, isLet, isIfThenElse,
+                  error, extractLet, extractLam, extractIfThenElse,
+                  extractApp, extractVar, extractLit, extractProg,
+                  extractImport, show, startsWith, readFile,
+                  writeFile, replaceExtensionToJs)
 
 let compose = \f -> \g -> \x -> f (g x) in
 
@@ -286,7 +297,15 @@ let emitExports = \e ->
     (\s -> \e1 -> \e2 -> "exports." + s + " = " + s + "; " + e2)
     (\p -> \e1 -> \e2 -> "") in
 
-let emitImports = \is -> "/* This is where the imports are */" in
+let emitFuncImport = \xs ->
+  foldLeft (\x -> \y -> x + ", " + y) (head xs) (tail xs) in
+
+let emitImport = \i ->
+  "var {" + (emitFuncImport (snd (extractImport i))) + "} = require('./" + (fst (extractImport i)) + ".js')" in
+
+let emitImports = \is ->
+  let f = \x -> \y -> x + "; " + (emitImport y) in
+  foldLeft f ";" is in
 
 let toJs = \progAst ->
   let isOp = \c -> (c == "+") || (c == "*") || (c == "==") || (c == "||") || (c == "&&") ||
@@ -308,5 +327,4 @@ let toJs = \progAst ->
 let main = \progArgs ->
   let txt = readFile (fst progArgs) in
   let progAst = fst (head (parse progP (stringToCharList txt))) in
-  let externals = readFile "js/Externals.js" in
-  writeFile (replaceExtensionToJs (snd progArgs)) (externals + "; " + (toJs progAst)) in ()
+  writeFile (replaceExtensionToJs (snd progArgs)) (toJs progAst) in ()
