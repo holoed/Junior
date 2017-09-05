@@ -18,8 +18,12 @@ let get = \r -> \s -> mkTuple2 s s in
 
 let runReaderState = \m -> \r -> \s -> (m r) s in
 
+let freshName = bind get (\x ->
+                bind (put (x + 1))(\i2 ->
+                unit ("T" + x))) in
+
 let sample = bind (local (\v -> v * 2) ask) (\x ->
-             bind get (\y ->
+             bind freshName (\y ->
              bind (put (x + y))(\i2 -> unit ()))) in
 
 ()
