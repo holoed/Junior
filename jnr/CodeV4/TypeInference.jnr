@@ -1,0 +1,25 @@
+import Externals (mkTuple2, fst, snd)
+
+let bind = \m -> \f -> \r -> \s ->
+ let p = ((m r) s) in
+ let s2 = (fst p) in
+ let x = (snd p) in
+ ((f x) r) s2 in
+
+let unit = \x -> \r -> \s -> mkTuple2 s x in
+
+let ask = \r -> \s -> mkTuple2 s r in
+
+let local = \f -> \m -> \r -> \s -> m (f r) s in
+
+let put = \s2 -> \r -> \s -> mkTuple2 s2 () in
+
+let get = \r -> \s -> mkTuple2 s s in
+
+let runReaderState = \m -> \r -> \s -> (m r) s in
+
+let sample = bind (local (\v -> v * 2) ask) (\x ->
+             bind get (\y ->
+             bind (put (x + y))(\i2 -> unit ()))) in
+
+()
