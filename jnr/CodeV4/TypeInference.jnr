@@ -27,6 +27,8 @@ let prettyType = \t ->
   if (isTyCon t) then
     let p = extractTyCon t in
     fst p
+  else if (isTyVar t) then
+    extractTyVar t
   else error "This should not happen" in
 
 let sample = bind (local (\v -> v * 2) ask) (\x ->

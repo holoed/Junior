@@ -10,12 +10,11 @@ var TyCon = (function () {
 })();
 
 var TyVar = (function () {
-    function TyVar(value0, value1) {
+    function TyVar(value0) {
         this.value0 = value0;
-        this.value1 = value1;
     };
-    TyVar.create = function (value0, value1) {
-        return new TyVar(value0, value1);
+    TyVar.create = function (value0) {
+        return new TyVar(value0);
     };
     return TyVar;
 })();
@@ -39,8 +38,18 @@ var extractTyCon = function (x) {
   return { fst: x.value0, snd: x.value1 }
 }
 
+var isTyVar = function (x) {
+  return (x instanceof TyVar);
+}
+
+var extractTyVar = function (x) {
+  return x.value0;
+}
+
 exports.TyCon = TyCon;
 exports.TyVar = TyVar;
 exports.TyLam = TyLam;
 exports.isTyCon = isTyCon;
 exports.extractTyCon = extractTyCon;
+exports.isTyVar = isTyVar;
+exports.extractTyVar = extractTyVar;
