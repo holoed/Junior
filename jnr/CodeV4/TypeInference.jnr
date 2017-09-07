@@ -1,4 +1,5 @@
 import Externals (mkTuple2, fst, snd)
+import TypesExternals (TyCon, TyVar, TyLam)
 
 let bind = \m -> \f -> \r -> \s ->
  let p = ((m r) s) in
@@ -21,6 +22,12 @@ let runReaderState = \m -> \r -> \s -> (m r) s in
 let freshName = bind get (\x ->
                 bind (put (x + 1))(\i2 ->
                 unit ("T" + x))) in
+
+let prettyType = \t ->
+  if (isTyCon t) then
+    let p = extractTyCon t in
+    fst p
+  else error "This should not happen" in
 
 let sample = bind (local (\v -> v * 2) ask) (\x ->
              bind freshName (\y ->
