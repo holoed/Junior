@@ -46,10 +46,20 @@ var extractTyVar = function (x) {
   return x.value0;
 }
 
+var isTyLam = function (x) {
+  return (x instanceof TyLam);
+}
+
+var extractTyLam = function (x) {
+  return { fst: x.value0, snd: x.value1 }
+}
+
 exports.TyCon = TyCon;
 exports.TyVar = TyVar;
 exports.TyLam = TyLam;
 exports.isTyCon = isTyCon;
-exports.extractTyCon = extractTyCon;
 exports.isTyVar = isTyVar;
+exports.isTyLam = isTyLam;
+exports.extractTyCon = extractTyCon;
 exports.extractTyVar = extractTyVar;
+exports.extractTyLam = extractTyLam;

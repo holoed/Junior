@@ -1,3 +1,4 @@
+import Base (foldLeft)
 import Externals (mkTuple2, fst, snd)
 import TypesExternals (TyCon, TyVar, TyLam)
 
@@ -26,9 +27,12 @@ let freshName = bind get (\x ->
 let prettyType = \t ->
   if (isTyCon t) then
     let p = extractTyCon t in
-    fst p
+    (fst p) + " " + (foldLeft (\acc -> \x -> acc + (prettyType x)) "" (snd p))
   else if (isTyVar t) then
     extractTyVar t
+  else if (isTyLam t) then
+    let p = extractTyLam t in
+    "(" + (prettyType (fst p)) + " -> " + (prettyType (snd p)) + ")"
   else error "This should not happen" in
 
 let sample = bind (local (\v -> v * 2) ask) (\x ->
