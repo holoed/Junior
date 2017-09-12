@@ -54,6 +54,28 @@ var extractTyLam = function (x) {
   return { fst: x.value0, snd: x.value1 }
 }
 
+var mkTyCon = function (x) {
+  return function (y) {
+    return TyCon.create(x, y);
+  }
+}
+
+var isFloat = function(n) {
+  return n === +n && n !== (n|0);
+}
+
+var isInt = function(n) {
+  return n === +n && n === (n|0);
+}
+
+var isString = function(x) {
+  return (typeof x === 'string' || x instanceof String);
+}
+
+var isChar = function(x) {
+  return isString(x) && x.length == 1;
+}
+
 exports.TyCon = TyCon;
 exports.TyVar = TyVar;
 exports.TyLam = TyLam;
@@ -63,3 +85,8 @@ exports.isTyLam = isTyLam;
 exports.extractTyCon = extractTyCon;
 exports.extractTyVar = extractTyVar;
 exports.extractTyLam = extractTyLam;
+exports.mkTyCon = mkTyCon;
+exports.isFloat = isFloat;
+exports.isInt = isInt;
+exports.isString = isString;
+exports.isChar = isChar;

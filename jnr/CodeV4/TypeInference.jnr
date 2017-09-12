@@ -1,6 +1,6 @@
 import Base (foldLeft)
-import Externals (mkTuple2, fst, snd)
-import TypesExternals (TyCon, TyVar, TyLam)
+import Externals (mkTuple2, fst, snd, empty)
+import TypesExternals (mkTyCon, TyVar, TyLam, isInt, isFloat, isString, isChar)
 
 let bind = \m -> \f -> \r -> \s ->
  let p = ((m r) s) in
@@ -35,8 +35,16 @@ let prettyType = \t ->
     "(" + (prettyType (fst p)) + " -> " + (prettyType (snd p)) + ")"
   else error "This should not happen" in
 
-let sample = bind (local (\v -> v * 2) ask) (\x ->
-             bind freshName (\y ->
-             bind (put (x + y))(\i2 -> unit ()))) in
+let integerCon = mkTyCon "Int" empty in
+let floatCon = mkTyCon "Float" empty in
+let charCon = mkTyCon "Char" empty in
+let stringCon = mkTyCon "String"  empty in
+
+let literalToType = \lit ->
+    if (isInt lit) then integerCon
+    else if (isFloat lit) then floatCon
+    else if (isChar lit) then charCon
+    else if (isString lit) then stringCon
+    else error "This should not happen" in
 
 ()
