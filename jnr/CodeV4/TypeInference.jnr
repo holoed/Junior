@@ -1,6 +1,6 @@
 import Base (foldLeft)
 import Externals (mkTuple2, fst, snd, empty, containsKey, findValue, error)
-import TypesExternals (mkTyCon, mkTyVar, isTyVar, TyVar, TyLam, isInt, isFloat, isString, isChar)
+import TypesExternals (mkTyCon, mkTyVar, mkTyLam, isTyVar, TyVar, TyLam, isInt, isFloat, isString, isChar)
 
 let bind = \m -> \f -> \r -> \s ->
  let p = ((m r) s) in
@@ -62,6 +62,9 @@ let subs = \t -> \s ->
       let t2 = (lookup n s) in
       if (equalType t t2) then t2
       else (subs t2 s)
+    else if (isTyLam t) then
+      let p = extractTyLam t in
+      mkTyLam (subs (fst p) s) (subs (snd p) s)
     else (error "This should not happen") in
 
 ()

@@ -64,6 +64,12 @@ var mkTyVar = function (x) {
   return TyVar.create(x);
 }
 
+var mkTyLam = function (x) {
+  return function (y) {
+    return TyLam.create(x, y);
+  }
+}
+
 var isFloat = function(n) {
   return n === +n && n !== (n|0);
 }
@@ -91,6 +97,7 @@ exports.extractTyVar = extractTyVar;
 exports.extractTyLam = extractTyLam;
 exports.mkTyCon = mkTyCon;
 exports.mkTyVar = mkTyVar;
+exports.mkTyLam = mkTyLam;
 exports.isFloat = isFloat;
 exports.isInt = isInt;
 exports.isString = isString;
