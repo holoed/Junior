@@ -1,4 +1,4 @@
-import Base (foldLeft)
+import Base (foldLeft, fmap)
 import Externals (mkTuple2, fst, snd, empty, containsKey, findValue, error)
 import TypesExternals (mkTyCon, mkTyVar, mkTyLam, isTyVar, TyVar, TyLam, isInt, isFloat, isString, isChar)
 
@@ -69,5 +69,13 @@ let subs = \t -> \s ->
       let p = extractTyCon t in
       mkTyCon (fst p) (fmap (\x -> subs x s) (snd p))
     else (error "This should not happen") in
+
+let mgu = \a -> \b -> \s ->
+  let p = mkTuple2 (subs a s) (subs b s) in
+  if (((isTyVar (fst p)) && (isTyVar (snd p))) &&
+      ((extractTyVar (fst p)) == (extractTyVar (snd p)))) then s
+  else error "This should not happen" in
+
+
 
 ()
