@@ -165,10 +165,11 @@ let addOp = choice (bind (symbol "+")(\x -> unit (infixOp "+")))
 let mulOp = choice (bind (symbol "*")(\x -> unit (infixOp "*")))
                    (bind (symbol "/")(\x -> unit (infixOp "/"))) in
 
-let cmpOp = choice (choice (choice (bind (symbol ">")(\x -> unit (infixOp ">")))
-                                   (bind (symbol "<")(\x -> unit (infixOp "<"))))
-                                   (bind (symbol "==")(\x -> unit (infixOp "=="))))
-                                   (bind (symbol "||")(\x -> unit (infixOp "||"))) in
+let cmpOp = choice (choice (choice (choice (bind (symbol ">")(\x -> unit (infixOp ">")))
+                                           (bind (symbol "<")(\x -> unit (infixOp "<"))))
+                                           (bind (symbol "==")(\x -> unit (infixOp "=="))))
+                                           (bind (symbol "||")(\x -> unit (infixOp "||"))))
+                                           (bind (symbol "&&")(\x -> unit (infixOp "&&"))) in
 
 let expr =
    let parens = bind (symbol "(")(\i1 ->

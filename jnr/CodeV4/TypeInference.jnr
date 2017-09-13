@@ -1,6 +1,6 @@
 import Base (foldLeft)
-import Externals (mkTuple2, fst, snd, empty)
-import TypesExternals (mkTyCon, TyVar, TyLam, isInt, isFloat, isString, isChar)
+import Externals (mkTuple2, fst, snd, empty, containsKey, findValue, error)
+import TypesExternals (mkTyCon, mkTyVar, isTyVar, TyVar, TyLam, isInt, isFloat, isString, isChar)
 
 let bind = \m -> \f -> \r -> \s ->
  let p = ((m r) s) in
@@ -46,5 +46,22 @@ let literalToType = \lit ->
     else if (isChar lit) then charCon
     else if (isString lit) then stringCon
     else error "This should not happen" in
+
+let lookup = \k -> \dict ->
+    if (containsKey k dict) then
+        (findValue k dict)
+    else
+        (mkTyVar k) in
+
+let equalType = \t1 -> \t2 ->
+  ((isTyVar t1) && (isTyVar t2)) && ((extractTyVar t1) == (extractTyVar t2)) in
+
+let subs = \t -> \s ->
+    if (isTyVar t) then
+      let n = (extractTyVar t) in
+      let t2 = (lookup n s) in
+      if (equalType t t2) then t2
+      else (subs t2 s)
+    else (error "This should not happen") in
 
 ()

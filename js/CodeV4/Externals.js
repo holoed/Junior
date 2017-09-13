@@ -243,6 +243,19 @@ var replaceExtensionToJs = function (s) {
   return s.substr(0, s.lastIndexOf(".")) + ".js";
 }
 
+var containsKey = function (k) {
+  return function (dict) {
+    console.log("Key " + k + " Dict " + dict + " " + (k in dict))
+    return (k in dict);
+  }
+}
+
+var findValue = function (k) {
+  return function (dict) {
+    return dict[k];
+  }
+}
+
 exports.cons = cons;
 exports.isEmpty = isEmpty;
 exports.head = head;
@@ -289,3 +302,5 @@ exports.startsWith = startsWith;
 exports.readFile = readFile;
 exports.writeFile = writeFile;
 exports.replaceExtensionToJs = replaceExtensionToJs;
+exports.containsKey = containsKey;
+exports.findValue = findValue;
