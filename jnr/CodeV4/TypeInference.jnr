@@ -65,6 +65,9 @@ let subs = \t -> \s ->
     else if (isTyLam t) then
       let p = extractTyLam t in
       mkTyLam (subs (fst p) s) (subs (snd p) s)
+    else if (isTyCon t) then
+      let p = extractTyCon t in
+      mkTyCon (fst p) (fmap (\x -> subs x s) (snd p))
     else (error "This should not happen") in
 
 ()
