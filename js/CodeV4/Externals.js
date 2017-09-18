@@ -256,6 +256,20 @@ var findValue = function (k) {
   }
 }
 
+var singletonSet = function (x) {
+  return new Set([x]);
+}
+
+var union = function(setA) {
+    return function (setB) {
+      var unionSet = new Set(setA);
+      for (var elem of setB) {
+          unionSet.add(elem);
+      }
+      return unionSet;
+  }
+}
+
 exports.cons = cons;
 exports.isEmpty = isEmpty;
 exports.head = head;
@@ -304,3 +318,5 @@ exports.writeFile = writeFile;
 exports.replaceExtensionToJs = replaceExtensionToJs;
 exports.containsKey = containsKey;
 exports.findValue = findValue;
+exports.singletonSet = singletonSet;
+exports.union = union;

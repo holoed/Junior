@@ -1,5 +1,5 @@
 import Base (foldLeft, fmap)
-import Externals (mkTuple2, fst, snd, empty, containsKey, findValue, error)
+import Externals (mkTuple2, fst, snd, empty, containsKey, findValue, error, singletonSet, union)
 import TypesExternals (mkTyCon, mkTyVar, mkTyLam, isTyVar, TyVar, TyLam, isInt, isFloat, isString, isChar)
 
 let bind = \m -> \f -> \r -> \s ->
@@ -69,6 +69,13 @@ let subs = \t -> \s ->
       let p = extractTyCon t in
       mkTyCon (fst p) (fmap (\x -> subs x s) (snd p))
     else (error "This should not happen") in
+
+let getTVarsOfType = \t ->
+  if (isTyVar t) then singletonSet (extractTyVar t)
+  else if (isTyLam t) then
+    let p = extractTyLam t in
+    union (getTVarsOfType (fst p)) (getTVarsOfType (snd p))
+  else error "This should not happen" in
 
 let mgu = \a -> \b -> \s ->
   let p = mkTuple2 (subs a s) (subs b s) in
