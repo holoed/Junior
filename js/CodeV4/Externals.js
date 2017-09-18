@@ -274,6 +274,12 @@ var emptySet = function() {
   return new Set()
 }();
 
+var setContains = function(x) {
+  return function (set) {
+    return set.has(x)
+  }
+};
+
 exports.cons = cons;
 exports.isEmpty = isEmpty;
 exports.head = head;
@@ -325,3 +331,4 @@ exports.findValue = findValue;
 exports.singletonSet = singletonSet;
 exports.union = union;
 exports.emptySet = emptySet;
+exports.setContains = setContains;
