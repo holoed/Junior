@@ -1,5 +1,5 @@
 import Base (foldLeft, fmap)
-import Externals (mkTuple2, fst, snd, empty, containsKey, findValue, error, singletonSet, union)
+import Externals (mkTuple2, fst, snd, empty, containsKey, findValue, error, singletonSet, union, emptySet)
 import TypesExternals (mkTyCon, mkTyVar, mkTyLam, isTyVar, TyVar, TyLam, isInt, isFloat, isString, isChar)
 
 let bind = \m -> \f -> \r -> \s ->
@@ -75,6 +75,9 @@ let getTVarsOfType = \t ->
   else if (isTyLam t) then
     let p = extractTyLam t in
     union (getTVarsOfType (fst p)) (getTVarsOfType (snd p))
+  else if (isTyCon t) then
+    let p = extractTyCon t in
+    foldLeft (\acc -> \x -> union acc (getTVarsOfType x)) emptySet (snd p)
   else error "This should not happen" in
 
 let mgu = \a -> \b -> \s ->

@@ -270,6 +270,10 @@ var union = function(setA) {
   }
 }
 
+var emptySet = function() {
+  return new Set()
+}();
+
 exports.cons = cons;
 exports.isEmpty = isEmpty;
 exports.head = head;
@@ -320,3 +324,4 @@ exports.containsKey = containsKey;
 exports.findValue = findValue;
 exports.singletonSet = singletonSet;
 exports.union = union;
+exports.emptySet = emptySet;
