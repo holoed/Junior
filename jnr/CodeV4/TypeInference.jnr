@@ -1,5 +1,5 @@
 import Base (foldLeft, fmap)
-import Externals (mkTuple2, fst, snd, empty, containsKey, findValue, error, singletonSet, union, emptySet)
+import Externals (mkTuple2, fst, snd, empty, containsKey, findValue, error, singletonSet, union, emptySet, not, setContains)
 import TypesExternals (mkTyCon, mkTyVar, mkTyLam, isTyVar, TyVar, TyLam, isInt, isFloat, isString, isChar)
 
 let bind = \m -> \f -> \r -> \s ->
@@ -84,6 +84,10 @@ let mgu = \a -> \b -> \s ->
   let p = mkTuple2 (subs a s) (subs b s) in
   if (((isTyVar (fst p)) && (isTyVar (snd p))) &&
       ((extractTyVar (fst p)) == (extractTyVar (snd p)))) then s
+  else if ((isTyVar (fst p)) &&
+           (not (setContains (extractTyVar (fst p)) (getTVarsOfType (snd p))))) then
+              extend (extractTyVar (fst p)) b s
+
   else error "This should not happen" in
 
 

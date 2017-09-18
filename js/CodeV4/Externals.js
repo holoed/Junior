@@ -243,9 +243,18 @@ var replaceExtensionToJs = function (s) {
   return s.substr(0, s.lastIndexOf(".")) + ".js";
 }
 
+var addEntry = function (k) {
+  return function (v) {
+    return function (dict) {
+      var dict2 = Object.assign({}, dict); 
+      dict2[k] = v
+      return dict2;
+    }
+  }
+}
+
 var containsKey = function (k) {
   return function (dict) {
-    console.log("Key " + k + " Dict " + dict + " " + (k in dict))
     return (k in dict);
   }
 }
@@ -279,6 +288,11 @@ var setContains = function(x) {
     return set.has(x)
   }
 };
+
+var not = function(x){
+   if (x) return false
+   else return true
+}
 
 exports.cons = cons;
 exports.isEmpty = isEmpty;
@@ -328,7 +342,9 @@ exports.writeFile = writeFile;
 exports.replaceExtensionToJs = replaceExtensionToJs;
 exports.containsKey = containsKey;
 exports.findValue = findValue;
+exports.addEntry = addEntry;
 exports.singletonSet = singletonSet;
 exports.union = union;
 exports.emptySet = emptySet;
 exports.setContains = setContains;
+exports.not = not;
