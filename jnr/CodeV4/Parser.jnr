@@ -141,9 +141,10 @@ let quotedString = bind (chr "\"")(\x ->
                    bind (chr "\"")(\z ->
                    unit (charListToString xs)))) in
 
-let lit =  choice (choice (bind (token integer) (\n -> unit (elit n)))
-                          (bind (token quotedString) (\s -> unit (elitS s))))
-                  (bind (symbol "()") (\x -> unit elitVoid)) in
+let lit =  choice (choice (choice (bind (token integer) (\n -> unit (elit n)))
+                                  (bind (token float) (\n -> unit (elit n))))
+                                  (bind (token quotedString) (\s -> unit (elitS s))))
+                                  (bind (symbol "()") (\x -> unit elitVoid)) in
 
 let chainl1 = \p -> \op ->
   let rest = \x -> choice (bind op (\f ->

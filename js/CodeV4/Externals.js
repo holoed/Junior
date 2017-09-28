@@ -301,7 +301,7 @@ var listToArray = function(xs){
     out.push(head(ys))
     ys = tail(ys)
   }
-  return out.slice()
+  return out;
 }
 
 exports.cons = cons;
