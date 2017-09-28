@@ -1,4 +1,4 @@
-import Externals (cons, isEmpty, head, tail, nil)
+import Externals (cons, isEmpty, head, tail, empty)
 
 let compose = \f -> \g -> \x -> f (g x) in
 
@@ -16,17 +16,29 @@ let append = \xs -> \ys ->
   else (cons (head xs) (append (tail xs) ys)) in
 
 let concat = \xss ->
-  if (isEmpty xss) then nil
+  if (isEmpty xss) then empty
   else append (head xss) (concat (tail xss)) in
 
 let range = \startIndex -> \endIndex ->
     let range2 = \acc -> \endIndex ->
       if (startIndex > endIndex) then acc
       else range2 (cons endIndex acc) (endIndex - 1) in
-    range2 nil endIndex in
+    range2 empty endIndex in
+
+let drop = \n -> \xs ->
+  if ((n == 0) || (isEmpty xs)) then xs
+  else drop (n - 1) (tail xs) in
+
+let reverse = foldLeft (\acc -> \x -> cons x acc) empty in
+
+let take = \n -> \xs ->
+  let take2 = \n -> \acc -> \xs ->
+    if ((n == 0) || (isEmpty xs)) then acc
+    else take2 (n - 1) (cons (head xs) acc) (tail xs) in
+  reverse (take2 n empty xs) in
 
 let fmap = \f -> \xs ->
-  foldRight (\x -> \acc -> cons (f x) acc) nil xs in
+  foldRight (\x -> \acc -> cons (f x) acc) empty xs in
 
 let flatMap = \f -> compose concat (fmap f) in
 

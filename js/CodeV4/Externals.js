@@ -246,7 +246,7 @@ var replaceExtensionToJs = function (s) {
 var addEntry = function (k) {
   return function (v) {
     return function (dict) {
-      var dict2 = Object.assign({}, dict); 
+      var dict2 = Object.assign({}, dict);
       dict2[k] = v
       return dict2;
     }
@@ -292,6 +292,16 @@ var setContains = function(x) {
 var not = function(x){
    if (x) return false
    else return true
+}
+
+var listToArray = function(xs){
+  var ys = xs
+  var out = []
+  while (!isEmpty(ys)) {
+    out.push(head(ys))
+    ys = tail(ys)
+  }
+  return out.slice()
 }
 
 exports.cons = cons;
@@ -348,3 +358,4 @@ exports.union = union;
 exports.emptySet = emptySet;
 exports.setContains = setContains;
 exports.not = not;
+exports.listToArray = listToArray;
