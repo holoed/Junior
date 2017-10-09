@@ -1,6 +1,7 @@
 import Base (foldLeft, fmap)
 import Externals (mkTuple2, fst, snd, empty, containsKey, findValue, error, singletonSet, union, emptySet, not, setContains)
 import TypesExternals (mkTyCon, mkTyVar, mkTyLam, isTyVar, TyVar, TyLam, isInt, isFloat, isString, isChar)
+import CodeGenerator (cataExp)
 
 let bind = \m -> \f -> \r -> \s ->
  let p = ((m r) s) in
@@ -99,10 +100,15 @@ let mgu = \a -> \b -> \s ->
   else if (((isTyCon (fst p)) && (isTyCon (snd p))) &&
            ((fst (extractTyCon (fst p))) == (fst (extractTyCon (snd p))))) then
            fold2 (\subst -> \t1 -> \t2 -> mgu t1 t2 subst) s args1 args2
-
-
   else error "This should not happen" in
 
-
+let tp = \e ->
+  cataExp e
+    (\x -> unit mgu (literalToType v) bt s)
+    (\s -> error "")
+    (\s -> \e -> error "")
+    (\e1 -> \e2 -> error "")
+    (\s -> \e1 -> \e2 -> error "")
+    (\p -> \e1 -> \e2 -> error "") in
 
 ()
