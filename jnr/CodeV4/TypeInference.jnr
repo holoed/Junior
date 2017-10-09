@@ -80,6 +80,10 @@ let getTVarsOfType = \t ->
     foldLeft (\acc -> \x -> union acc (getTVarsOfType x)) emptySet (snd p)
   else error "This should not happen" in
 
+let fold2 = \f -> \acc -> \xs -> \ys ->
+  if ((isEmpty xs) && (isEmpty ys)) then acc
+  else fold2 f (f acc (head xs) (head ys)) (tail xs) (tail ys) in
+
 let mgu = \a -> \b -> \s ->
   let p = mkTuple2 (subs a s) (subs b s) in
   if (((isTyVar (fst p)) && (isTyVar (snd p))) &&
@@ -92,6 +96,10 @@ let mgu = \a -> \b -> \s ->
     let p1 = extractTyLam (fst p) in
     let p2 = extractTyLam (snd p) in
     mgu (fst p1) (fst p2) (mgu (snd p1) (snd p2) s)
+  else if (((isTyCon (fst p)) && (isTyCon (snd p))) &&
+           ((fst (extractTyCon (fst p))) == (fst (extractTyCon (snd p))))) then
+           fold2 (\subst -> \t1 -> \t2 -> mgu t1 t2 subst) s args1 args2
+
 
   else error "This should not happen" in
 
