@@ -87,6 +87,11 @@ let mgu = \a -> \b -> \s ->
   else if ((isTyVar (fst p)) &&
            (not (setContains (extractTyVar (fst p)) (getTVarsOfType (snd p))))) then
               extend (extractTyVar (fst p)) b s
+  else if (isTyVar (snd p)) then mgu b a s
+  else if ((isTyLam (fst p)) && (isTyLam (snd p))) then
+    let p1 = extractTyLam (fst p) in
+    let p2 = extractTyLam (snd p) in
+    mgu (fst p1) (fst p2) (mgu (snd p1) (snd p2) s)
 
   else error "This should not happen" in
 
