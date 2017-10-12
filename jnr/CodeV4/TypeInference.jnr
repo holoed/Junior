@@ -1,6 +1,6 @@
 import Base (foldLeft, fmap)
 import Externals (mkTuple2, fst, snd, empty, containsKey, findValue, error, singletonSet, union, emptySet, not, setContains)
-import TypesExternals (mkTyCon, mkTyVar, mkTyLam, isTyVar, TyVar, TyLam, isInt, isFloat, isString, isChar)
+import TypesExternals (mkTyCon, mkTyVar, mkTyLam, TyVar, TyLam, isInt, isFloat, isString, isChar, isTyCon, isTyLam, isTyVar, extractTyLam, extractTyVar, extractTyCon)
 import CodeGenerator (cataExp)
 
 let bind = \m -> \f -> \r -> \s ->
