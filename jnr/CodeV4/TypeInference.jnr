@@ -104,7 +104,7 @@ let mgu = \a -> \b -> \s ->
 
 let tp = \e ->
   cataExp e
-    (\x -> unit mgu (literalToType v) bt s)
+    (\x -> unit mgu (literalToType x) bt s)
     (\s -> error "")
     (\s -> \e -> error "")
     (\e1 -> \e2 -> error "")
