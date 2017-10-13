@@ -120,6 +120,7 @@ let tp = \e ->
 
 let typeOf = \e ->
   let baseType = mkTyVar "TBase" in
-  tp e (mkTuple2 emptyDict baseType) (mkTuple2 emptyDict 0) in
-
+  let ret = tp e (mkTuple2 emptyDict baseType) (mkTuple2 emptyDict 0) in
+  subs baseType (fst (fst ret)) in
+  
 ()
