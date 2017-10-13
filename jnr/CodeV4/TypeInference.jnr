@@ -1,5 +1,5 @@
 import Base (foldLeft, fmap)
-import Externals (mkTuple2, fst, snd, empty, containsKey, findValue, error, singletonSet, union, emptySet, not, setContains, emptyDict, addEntry)
+import Externals (mkTuple2, fst, snd, empty, containsKey, findValue, error, singletonSet, union, emptySet, not, setContains, emptyDict, addEntry, elit)
 import TypesExternals (mkTyCon, mkTyVar, mkTyLam, TyVar, TyLam, isInt, isFloat, isString, isChar, isTyCon, isTyLam, isTyVar, extractTyLam, extractTyVar, extractTyCon)
 import CodeGenerator (cataExp)
 
@@ -111,7 +111,7 @@ let tp = \e ->
            let index = snd state in
            let newSubs = mgu (literalToType x) baseType subs in
            bind (put (mkTuple2 newSubs index)) (\ig ->
-           unit x))))
+           unit (elit x)))))
     (\s -> error "")
     (\s -> \e -> error "")
     (\e1 -> \e2 -> error "")
