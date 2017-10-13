@@ -104,7 +104,14 @@ let mgu = \a -> \b -> \s ->
 
 let tp = \e ->
   cataExp e
-    (\x -> bind ask (\env -> mgu (literalToType x) (snd env) s))
+    (\x -> bind ask (\env ->
+           bind get (\state ->
+           let baseType = snd env in
+           let subs = fst state in
+           let index = snd state in
+           let newSubs = mgu (literalToType x) baseType subs in
+           bind (put (mkTuple2 newSubs index)) (\ig ->
+           unit x))))
     (\s -> error "")
     (\s -> \e -> error "")
     (\e1 -> \e2 -> error "")
