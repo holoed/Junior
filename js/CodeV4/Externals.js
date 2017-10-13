@@ -243,6 +243,8 @@ var replaceExtensionToJs = function (s) {
   return s.substr(0, s.lastIndexOf(".")) + ".js";
 }
 
+var emptyDict = {};
+
 var addEntry = function (k) {
   return function (v) {
     return function (dict) {
@@ -353,6 +355,7 @@ exports.replaceExtensionToJs = replaceExtensionToJs;
 exports.containsKey = containsKey;
 exports.findValue = findValue;
 exports.addEntry = addEntry;
+exports.emptyDict = emptyDict;
 exports.singletonSet = singletonSet;
 exports.union = union;
 exports.emptySet = emptySet;
