@@ -1,5 +1,3 @@
-"use strict";
-
 var fs = require('fs')
 
 var Cons = function(head, tail) {
