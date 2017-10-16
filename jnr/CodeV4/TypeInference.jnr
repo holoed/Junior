@@ -1,5 +1,5 @@
 import Base (foldLeft, fmap)
-import Externals (mkTuple2, fst, snd, empty, containsKey, findValue, error, singletonSet, union, emptySet, not, setContains, emptyDict, addEntry, elit, evar, elam)
+import Externals (mkTuple2, fst, snd, empty, containsKey, findValue, error, singletonSet, union, emptySet, not, setContains, emptyDict, addEntry, elit, evar, elam, eapp)
 import TypesExternals (mkTyCon, mkTyVar, mkTyLam, TyVar, TyLam, isInt, isFloat, isString, isChar, isTyCon, isTyLam, isTyVar, extractTyLam, extractTyVar, extractTyCon)
 import CodeGenerator (cataExp)
 
@@ -133,7 +133,11 @@ let tp = \e ->
                  bind (put (mkTuple2 newSubs index)) (\ig ->
                  bind (local (\pair -> mkTuple2 (addEntry s t1 (fst pair)) t2) e)(\e2 ->
                  unit (elam s e2))))))))
-    (\e1 -> \e2 -> error "")
+    (\e1 -> \e2 -> bind ask (\env ->
+                   bind (freshName)(\t1 ->
+                   bind (local (\pair -> mkTuple2 (fst pair) (mkTyLam t1 (snd pair))) e1)(\e1p ->
+                   bind (local (\pair -> mkTuple2 (fst pair) t1) e2)(\e2p ->
+                   unit (eapp e1p e2p))))))
     (\s -> \e1 -> \e2 -> error "")
     (\p -> \e1 -> \e2 -> error "") in
 
