@@ -1,5 +1,5 @@
 import Base (foldLeft, fmap)
-import Externals (mkTuple2, fst, snd, empty, containsKey, findValue, error, singletonSet, union, emptySet, not, setContains, emptyDict, addEntry, elit)
+import Externals (mkTuple2, fst, snd, empty, containsKey, findValue, error, singletonSet, union, emptySet, not, setContains, emptyDict, addEntry, elit, evar, elam)
 import TypesExternals (mkTyCon, mkTyVar, mkTyLam, TyVar, TyLam, isInt, isFloat, isString, isChar, isTyCon, isTyLam, isTyVar, extractTyLam, extractTyVar, extractTyCon)
 import CodeGenerator (cataExp)
 
@@ -21,9 +21,10 @@ let get = \r -> \s -> mkTuple2 s s in
 
 let runReaderState = \m -> \r -> \s -> (m r) s in
 
-let freshName = bind get (\x ->
-                bind (put (x + 1))(\i2 ->
-                unit ("T" + x))) in
+let freshName = bind get (\state ->
+                let index = snd state in
+                bind (put (mkTuple2 (fst state) (index + 1)))(\i2 ->
+                unit (mkTyVar ("T" + index)))) in
 
 let prettyType = \t ->
   if (isTyCon t) then
@@ -57,18 +58,18 @@ let lookup = \k -> \dict ->
 let equalType = \t1 -> \t2 ->
   ((isTyVar t1) && (isTyVar t2)) && ((extractTyVar t1) == (extractTyVar t2)) in
 
-let subs = \t -> \s ->
+let subst = \t -> \s ->
     if (isTyVar t) then
       let n = (extractTyVar t) in
       let t2 = (lookup n s) in
       if (equalType t t2) then t2
-      else (subs t2 s)
+      else (subst t2 s)
     else if (isTyLam t) then
       let p = extractTyLam t in
-      mkTyLam (subs (fst p) s) (subs (snd p) s)
+      mkTyLam (subst (fst p) s) (subst (snd p) s)
     else if (isTyCon t) then
       let p = extractTyCon t in
-      mkTyCon (fst p) (fmap (\x -> subs x s) (snd p))
+      mkTyCon (fst p) (fmap (\x -> subst x s) (snd p))
     else (error "This should not happen") in
 
 let getTVarsOfType = \t ->
@@ -86,7 +87,7 @@ let fold2 = \f -> \acc -> \xs -> \ys ->
   else fold2 f (f acc (head xs) (head ys)) (tail xs) (tail ys) in
 
 let mgu = \a -> \b -> \s ->
-  let p = mkTuple2 (subs a s) (subs b s) in
+  let p = mkTuple2 (subst a s) (subst b s) in
   if (((isTyVar (fst p)) && (isTyVar (snd p))) &&
       ((extractTyVar (fst p)) == (extractTyVar (snd p)))) then s
   else if ((isTyVar (fst p)) &&
@@ -112,15 +113,34 @@ let tp = \e ->
            let newSubs = mgu (literalToType x) baseType subs in
            bind (put (mkTuple2 newSubs index)) (\ig ->
            unit (elit x)))))
-    (\s -> error "")
-    (\s -> \e -> error "")
+    (\s -> bind ask (\env ->
+           let ty = findValue s (fst env) in
+           bind get (\state ->
+           let baseType = snd env in
+           let subs = fst state in
+           let index = snd state in
+           let newSubs = mgu ty baseType subs in
+           bind (put (mkTuple2 newSubs index)) (\ig ->
+           unit (evar s)))))
+    (\s -> \e -> bind ask (\env ->
+                 bind (freshName)(\t1 ->
+                 bind (freshName)(\t2 ->
+                 bind get (\state ->
+                 let baseType = snd env in
+                 let subs = fst state in
+                 let index = snd state in
+                 let newSubs = mgu baseType (mkTyLam t1 t2) subs in
+                 bind (put (mkTuple2 newSubs index)) (\ig ->
+                 bind (local (\pair -> mkTuple2 (addEntry s t1 (fst pair)) t2) e)(\e2 ->
+                 unit (elam s e2))))))))
     (\e1 -> \e2 -> error "")
     (\s -> \e1 -> \e2 -> error "")
     (\p -> \e1 -> \e2 -> error "") in
 
 let typeOf = \e ->
   let baseType = mkTyVar "TBase" in
-  let ret = tp e (mkTuple2 emptyDict baseType) (mkTuple2 emptyDict 0) in
-  subs baseType (fst (fst ret)) in
-  
+  let typeEnv = addEntry "x" integerCon emptyDict in
+  let ret = runReaderState (tp e) (mkTuple2 typeEnv baseType) (mkTuple2 emptyDict 0) in
+  subst baseType (fst (fst ret)) in
+
 ()

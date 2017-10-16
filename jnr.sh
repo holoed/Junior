@@ -1,2 +1,2 @@
 #!/bin/bash
-node js/CompileHelper.js $1 $2
+node --harmony --use_strict js/CompileHelper.js $1 $2
