@@ -160,17 +160,17 @@ let chainr1 = \p -> \op ->
 
 let infixOp = \s -> \x -> \y -> eapp (eapp (evar s) x) y in
 
-let addOp = choice (bind (symbol "+")(\x -> unit (infixOp "+")))
-                   (bind (symbol "-")(\x -> unit (infixOp "-"))) in
+let addOp = choice (choice (bind (symbol "+")(\x -> unit (infixOp "+")))
+                           (bind (symbol "-")(\x -> unit (infixOp "-"))))
+                   (bind (symbol "||")(\x -> unit (infixOp "||"))) in
 
-let mulOp = choice (bind (symbol "*")(\x -> unit (infixOp "*")))
-                   (bind (symbol "/")(\x -> unit (infixOp "/"))) in
+let mulOp = choice (choice (bind (symbol "*")(\x -> unit (infixOp "*")))
+                           (bind (symbol "/")(\x -> unit (infixOp "/"))))
+                   (bind (symbol "&&")(\x -> unit (infixOp "&&"))) in
 
-let cmpOp = choice (choice (choice (choice (bind (symbol ">")(\x -> unit (infixOp ">")))
-                                           (bind (symbol "<")(\x -> unit (infixOp "<"))))
-                                           (bind (symbol "==")(\x -> unit (infixOp "=="))))
-                                           (bind (symbol "||")(\x -> unit (infixOp "||"))))
-                                           (bind (symbol "&&")(\x -> unit (infixOp "&&"))) in
+let cmpOp = choice (choice (bind (symbol ">")(\x -> unit (infixOp ">")))
+                           (bind (symbol "<")(\x -> unit (infixOp "<"))))
+                   (bind (symbol "==")(\x -> unit (infixOp "=="))) in
 
 let expr =
    let parens = bind (symbol "(")(\i1 ->
@@ -202,7 +202,7 @@ let expr =
 
    let atom = choice (choice (choice (choice (choice ifThenElse lam) local) vaR) lit) parens in
 
-   foldLeft chainl1 atom (cons mulOp (cons addOp (cons cmpOp (cons (unit eapp) empty)))) in
+   foldLeft chainl1 atom (cons (choice cmpOp mulOp) (cons addOp (cons (unit eapp) empty))) in
 
 let packageNameP = token (bind upper (\x ->
                           bind (many alphanum) (\xs ->
