@@ -1,6 +1,6 @@
 import Base (foldLeft, fmap)
 import Externals (mkTuple2, fst, snd, empty, containsKey, findValue, error, singletonSet, union, emptySet, not, setContains, emptyDict, addEntry, isEmpty, elit, evar, elam, eapp)
-import TypesExternals (mkTyCon, mkTyVar, mkTyLam, TyVar, TyLam, isInt, isFloat, isString, isChar, isTyCon, isTyLam, isTyVar, extractTyLam, extractTyVar, extractTyCon)
+import TypesExternals (mkTyCon, mkTyVar, mkTyLam, TyVar, TyLam, isInt, isFloat, isString, isChar, isTyCon, isTyLam, isTyVar, extractTyLam, extractTyVar, extractTyCon, mkForAll, extractForAll)
 import CodeGenerator (cataExp)
 
 let bind = \m -> \f -> \r -> \s ->
@@ -29,7 +29,7 @@ let freshName = bind get (\state ->
 let prettyType = \t ->
   if (isTyCon t) then
     let p = extractTyCon t in
-    (fst p) + " " + (foldLeft (\acc -> \x -> acc + (prettyType x)) "" (snd p))
+    (fst p) + (foldLeft (\acc -> \x -> acc + " " + (prettyType x)) "" (snd p))
   else if (isTyVar t) then
     extractTyVar t
   else if (isTyLam t) then
@@ -103,6 +103,16 @@ let mgu = \a -> \b -> \s ->
            fold2 (\subst -> \t1 -> \t2 -> mgu t1 t2 subst) s (snd (extractTyCon (fst p))) (snd (extractTyCon (snd p)))
   else error "This should not happen" in
 
+let findScheme = \name -> \env ->
+  findValue name env in
+
+let addSchemne = \name -> \ty -> \env ->
+  addEntry name (mkForAll ty empty) env in
+
+let getTypeForName = \name -> \env ->
+  let p = extractForAll (findScheme name env) in
+  fst p in
+
 let tp = \e ->
   cataExp e
     (\x -> bind ask (\env ->
@@ -114,7 +124,7 @@ let tp = \e ->
            bind (put (mkTuple2 newSubs index)) (\ig ->
            unit (elit x)))))
     (\s -> bind ask (\env ->
-           let ty = findValue s (fst env) in
+           let ty = getTypeForName s (fst env) in
            bind get (\state ->
            let baseType = snd env in
            let subs = fst state in
@@ -131,7 +141,7 @@ let tp = \e ->
                  let index = snd state in
                  let newSubs = mgu baseType (mkTyLam t1 t2) subs in
                  bind (put (mkTuple2 newSubs index)) (\ig ->
-                 bind (local (\pair -> mkTuple2 (addEntry s t1 (fst pair)) t2) e)(\e2 ->
+                 bind (local (\pair -> mkTuple2 (addSchemne s t1 (fst pair)) t2) e)(\e2 ->
                  unit (elam s e2))))))))
     (\e1 -> \e2 -> bind ask (\env ->
                    bind (freshName)(\t1 ->
@@ -142,8 +152,8 @@ let tp = \e ->
     (\p -> \e1 -> \e2 -> error "") in
 
 let predefTypeEnv =
-  addEntry "+" (mkTyLam integerCon (mkTyLam integerCon integerCon))
-  (addEntry "-" (mkTyLam integerCon (mkTyLam integerCon integerCon))
+   addEntry "+" (mkForAll (mkTyLam integerCon (mkTyLam integerCon integerCon)) empty)
+  (addEntry "-" (mkForAll (mkTyLam integerCon (mkTyLam integerCon integerCon)) empty)
    emptyDict) in
 
 let typeOf = \e ->

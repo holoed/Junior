@@ -86,6 +86,29 @@ var isChar = function(x) {
   return isString(x) && x.length == 1;
 }
 
+var ForAll = (function () {
+    function ForAll(value0, value1) {
+        this.value0 = value0;
+        this.value1 = value1;
+    };
+    ForAll.create = function (value0, value1) {
+        return new ForAll(value0, value1);
+    };
+    return ForAll;
+})();
+
+var mkForAll = function (x) {
+  return function (y) {
+    return ForAll.create(x, y);
+  }
+}
+
+var extractForAll = function (x) {
+  return { fst: x.value0, snd: x.value1 }
+}
+
+exports.extractForAll = extractForAll;
+exports.mkForAll = mkForAll;
 exports.TyCon = TyCon;
 exports.TyVar = TyVar;
 exports.TyLam = TyLam;
