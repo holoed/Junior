@@ -159,10 +159,10 @@ let tp = \e ->
                    bind (local (\pair -> mkTuple2 (addScheme s t1 (fst pair)) (snd env)) e2)(\e2p ->
                    unit (elet s e1p e2p)))))))
     (\p -> \e1 -> \e2 ->
-                   bind (local (\pair -> mkTuple2 (fst pair) boolCon p))(\p2 ->
+                   bind (local (\pair -> mkTuple2 (fst pair) boolCon) p)(\p2 ->
                    bind e1 (\e1p ->
                    bind get (\state ->
-                   bind (local (\pair -> mkTuple2 (fst pair) (subst (snd pair) (fst state)) e2))(\e2p ->
+                   bind (local (\pair -> mkTuple2 (fst pair) (subst (snd pair) (fst state))) e2)(\e2p ->
                    unit (eIfThenElse p2 e1p e2p)))))) in
 
 let predefTypeEnv =
