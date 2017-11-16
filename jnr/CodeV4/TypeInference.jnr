@@ -103,7 +103,7 @@ let mgu = \a -> \b -> \s ->
   else if (((isTyCon (fst p)) && (isTyCon (snd p))) &&
            ((fst (extractTyCon (fst p))) == (fst (extractTyCon (snd p))))) then
            fold2 (\subst -> \t1 -> \t2 -> mgu t1 t2 subst) s (snd (extractTyCon (fst p))) (snd (extractTyCon (snd p)))
-  else error "This should not happen" in
+  else error "Unable to unify types" in
 
 let findScheme = \name -> \env ->
   findValue name env in
