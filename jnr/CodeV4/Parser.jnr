@@ -141,10 +141,14 @@ let quotedString = bind (chr "\"")(\x ->
                    bind (chr "\"")(\z ->
                    unit (charListToString xs)))) in
 
-let lit =  choice (choice (choice (bind (token float) (\n -> unit (elit n)))
-                                  (bind (token integer) (\n -> unit (elit n))))
-                                  (bind (token quotedString) (\s -> unit (elitS s))))
-                                  (bind (symbol "()") (\x -> unit elitVoid)) in
+let boolean = choice (bind (symbol "True")(\i1 -> unit True))
+                     (bind (symbol "False")(\i2 -> unit False)) in
+
+let lit = choice (choice (choice (choice (bind (token float) (\n -> unit (elit n)))
+                                         (bind (token integer) (\n -> unit (elit n))))
+                                         (bind (token quotedString) (\s -> unit (elitS s))))
+                                         (bind (symbol "()") (\x -> unit elitVoid)))
+                                         (bind (token boolean) (\b -> unit (elit b))) in
 
 let chainl1 = \p -> \op ->
   let rest = \x -> choice (bind op (\f ->
@@ -200,7 +204,7 @@ let expr =
                     bind expr (\e2 ->
                     unit (eIfThenElse p e1 e2))))))) in
 
-   let atom = choice (choice (choice (choice (choice ifThenElse lam) local) vaR) lit) parens in
+   let atom = choice (choice (choice (choice (choice ifThenElse lam) local) lit) vaR) parens in
 
    foldLeft chainl1 atom (cons (choice cmpOp mulOp) (cons addOp (cons (unit eapp) empty))) in
 

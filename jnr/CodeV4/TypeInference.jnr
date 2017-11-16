@@ -1,6 +1,6 @@
 import Base (foldLeft, fmap)
-import Externals (mkTuple2, fst, snd, empty, containsKey, findValue, error, singletonSet, union, emptySet, not, setContains, emptyDict, addEntry, isEmpty, elit, evar, elam, eapp, elet)
-import TypesExternals (mkTyCon, mkTyVar, mkTyLam, TyVar, TyLam, isInt, isFloat, isString, isChar, isTyCon, isTyLam, isTyVar, extractTyLam, extractTyVar, extractTyCon, mkForAll, extractForAll)
+import Externals (mkTuple2, fst, snd, empty, containsKey, findValue, error, singletonSet, union, emptySet, not, setContains, emptyDict, addEntry, isEmpty, elit, evar, elam, eapp, elet, eIfThenElse)
+import TypesExternals (mkTyCon, mkTyVar, mkTyLam, TyVar, TyLam, isBoolean, isInt, isFloat, isString, isChar, isTyCon, isTyLam, isTyVar, extractTyLam, extractTyVar, extractTyCon, mkForAll, extractForAll)
 import CodeGenerator (cataExp)
 
 let bind = \m -> \f -> \r -> \s ->
@@ -37,6 +37,7 @@ let prettyType = \t ->
     "(" + (prettyType (fst p)) + " -> " + (prettyType (snd p)) + ")"
   else error "This should not happen" in
 
+let boolCon = mkTyCon "Bool" empty in
 let integerCon = mkTyCon "Int" empty in
 let floatCon = mkTyCon "Float" empty in
 let charCon = mkTyCon "Char" empty in
@@ -47,6 +48,7 @@ let literalToType = \lit ->
     else if (isFloat lit) then floatCon
     else if (isChar lit) then charCon
     else if (isString lit) then stringCon
+    else if (isBoolean lit) then boolCon
     else error "This should not happen" in
 
 let lookup = \k -> \dict ->
@@ -148,19 +150,28 @@ let tp = \e ->
                    bind (local (\pair -> mkTuple2 (fst pair) (mkTyLam t1 (snd pair))) e1)(\e1p ->
                    bind (local (\pair -> mkTuple2 (fst pair) t1) e2)(\e2p ->
                    unit (eapp e1p e2p))))))
-    (\s -> \e1 -> \e2 -> bind ask (\env ->
-                         bind (freshName) (\t1 ->
-                         bind (local (\pair -> mkTuple2 (addScheme s t1 (fst pair)) t1) e1)(\e1p ->
-                         bind get (\state ->
-                         let t1p = subst t1 (fst state) in
-                         bind (local (\pair -> mkTuple2 (addScheme s t1 (fst pair)) (snd env)) e2)(\e2p ->
-                         unit (elet s e1p e2p)))))))
-    (\p -> \e1 -> \e2 -> error "") in
+    (\s -> \e1 -> \e2 ->
+                   bind ask (\env ->
+                   bind (freshName) (\t1 ->
+                   bind (local (\pair -> mkTuple2 (addScheme s t1 (fst pair)) t1) e1)(\e1p ->
+                   bind get (\state ->
+                   let t1p = subst t1 (fst state) in
+                   bind (local (\pair -> mkTuple2 (addScheme s t1 (fst pair)) (snd env)) e2)(\e2p ->
+                   unit (elet s e1p e2p)))))))
+    (\p -> \e1 -> \e2 ->
+                   bind (local (\pair -> mkTuple2 (fst pair) boolCon p))(\p2 ->
+                   bind e1 (\e1p ->
+                   bind get (\state ->
+                   bind (local (\pair -> mkTuple2 (fst pair) (subst (snd pair) (fst state)) e2))(\e2p ->
+                   unit (eIfThenElse p2 e1p e2p)))))) in
 
 let predefTypeEnv =
    addEntry "+" (mkForAll (mkTyLam integerCon (mkTyLam integerCon integerCon)) empty)
   (addEntry "-" (mkForAll (mkTyLam integerCon (mkTyLam integerCon integerCon)) empty)
-   emptyDict) in
+  (addEntry "*" (mkForAll (mkTyLam integerCon (mkTyLam integerCon integerCon)) empty)
+  (addEntry "/" (mkForAll (mkTyLam integerCon (mkTyLam integerCon integerCon)) empty)
+  (addEntry "==" (mkForAll (mkTyLam integerCon (mkTyLam integerCon boolCon)) empty)
+   emptyDict)))) in
 
 let typeOf = \e ->
   let baseType = mkTyVar "TBase" in
